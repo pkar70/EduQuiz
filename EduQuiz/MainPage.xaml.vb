@@ -113,16 +113,38 @@ Public NotInheritable Class MainPage
 
         sUri = "https://tinyurl.com/" & sUri
 
-        Dim oHttp As New System.Net.Http.HttpClient()
-        Dim oHttpResp As Net.Http.HttpResponseMessage = Await oHttp.GetAsync(New Uri(sUri))
-        If oHttpResp.StatusCode <> 301 Then
-            miBadCnt += 1
-            If miBadCnt > 3 Then uiDownload.IsEnabled = False
-            Await DialogBoxAsync("ERROR bad quiz ID (net)")
-            Return Nothing
-        End If
+        Dim oWebClntHand As Net.Http.HttpClientHandler = New System.Net.Http.HttpClientHandler
+        oWebClntHand.AllowAutoRedirect = False
 
-        Return New Uri(oHttpResp.Headers.Location.ToString)
+        Using oHttp As New System.Net.Http.HttpClient(oWebClntHand, True)
+
+            Dim oHttpResp As Net.Http.HttpResponseMessage
+
+            Try
+                oHttpResp = Await oHttp.GetAsync(New Uri(sUri))
+            Catch ex As Exception
+                ' jakby było przekierowanie na http, to nie moze zaczynac z https
+                ' bo error, hresult=-2147012856, "A redirect request will change a secure to a non-secure connection"
+                oHttpResp = Nothing
+            End Try
+            If oHttpResp Is Nothing Then
+                oHttpResp = Await oHttp.GetAsync(New Uri(sUri.Replace("https:", "http:")))
+            End If
+
+            If oHttpResp.StatusCode <> 301 Then
+                miBadCnt += 1
+                If miBadCnt > 3 Then uiDownload.IsEnabled = False
+                Await DialogBoxAsync("ERROR bad quiz ID (net)")
+                oHttpResp.Dispose()
+                Return Nothing
+            End If
+
+            Dim oRetUri As Uri = New Uri(oHttpResp.Headers.Location.ToString)
+            oHttpResp.Dispose()
+
+            Return oRetUri
+
+        End Using
 
     End Function
 
