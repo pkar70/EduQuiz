@@ -11,7 +11,7 @@
   <Identity
     Name="622PKar.QuizKurs"
     Publisher="CN=B2AF14E8-43FD-463C-83BA-4CEC47122EA2"
-    Version="1.0.0.0" />
+    Version="0.2101.26.0" />
 
   <mp:PhoneIdentity PhoneProductId="fb19c2b7-b594-417a-b038-46d0fbba1401" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -44,14 +44,14 @@
       </uap:VisualElements>
 		<Extensions>
 			<uap:Extension Category="windows.appService">
-				<uap:AppService Name="com.microsoft.pkar.eduquiz"/>
+				<uap:AppService Name="com.microsoft.pkar.quizkurs"/>
 			</uap:Extension>
 			<uap5:Extension
 			  Category="windows.appExecutionAlias"
-			  Executable="eduquiz.exe"
-			  EntryPoint="eduquiz.App">
+			  Executable="quizkurs.exe"
+			  EntryPoint="quizkurs.App">
 				<uap5:AppExecutionAlias>
-					<uap5:ExecutionAlias Alias="eduquiz.exe" />
+					<uap5:ExecutionAlias Alias="quizkurs.exe" />
 				</uap5:AppExecutionAlias>
 			</uap5:Extension>
 			<uap:Extension Category="windows.protocol">

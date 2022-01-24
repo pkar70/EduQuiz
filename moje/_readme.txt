@@ -1,2 +1,10 @@
-http://89.78.255.81/datypl.zip
-https://tinyurl.com/3a48ts82
+ID: 3a48ts82
+
+
+po usunieciu - usuwanie z pliku JSON
+usuwac takze plik .zip?
+
+taki plik juz istnieje - i pisze ze brakuje, sprawdzic logike (bo potem wchodzi i jest OK)
+
+Very simple test course (dates from polish history)
+mainpage, with one loaded course

@@ -7,8 +7,8 @@
     Public Property sMinDate As String = "19999999"
     Public Property bRandom As Boolean = False
     Public Property iSeconds As Integer = Integer.MaxValue
-
     Public Property bErrIgnore As Boolean = False
+    Public Property sEmail As String = ""
 End Class
 
 Public Class ListaQuiz

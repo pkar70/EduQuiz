@@ -4,7 +4,12 @@
 'plik jako html, albo jako zip, z hasłem?, tak zeby mogly byc w srodku takze obrazki?
 'rozpakowywanie do LocalTemp albo tp.
 
-' moze byc protocol EduQuiz://link
+' moze byc protocol QuizKurs://link
+
+' *TODO* obrazki w pliku
+' https://stackoverflow.com/questions/38831434/uwp-app-show-image-from-the-local-folder-in-the-webview
+' *TODO* wysyłanie email z rezultatem (czyli pamiętanie (numer pytania, odpowiedzi) - ale wtedy chyba bez 'dobrze/źle'
+' *TODO* losowa kolejność odpowiedzi
 
 Public NotInheritable Class MainPage
     Inherits Page
@@ -188,7 +193,7 @@ Public NotInheritable Class MainPage
         ProgRingShow(False)
 
         'If Not VerifyCorrectZip(oFile.Path) Then
-        '    ' *TODO* weryfikacja: czy jest w srodku plik eduquiz.txt z parametrami
+        '    ' *TODO* weryfikacja: czy jest w srodku plik quizkurs.txt z parametrami
         '    Await oFile.DeleteAsync
         '    Await DialogBoxAsync("ERROR: błędna struktura ściągniętego pliku")
         '    Return ""
@@ -235,12 +240,12 @@ Public NotInheritable Class MainPage
         End If
 
         Dim oZipFold As Windows.Storage.StorageFolder = Await Windows.Storage.ApplicationData.Current.LocalFolder.GetFolderAsync(sDirName)
-        If Not Await oZipFold.FileExistsAsync("eduquiz.txt") Then
+        If Not Await oZipFold.FileExistsAsync("MAIN_INFO_FILE") Then
             Await DialogBoxAsync("ERROR: missing files in archive")
             Return Nothing
         End If
 
-        Dim oInfoFile As Windows.Storage.StorageFile = Await oZipFold.GetFileAsync("eduquiz.txt")
+        Dim oInfoFile As Windows.Storage.StorageFile = Await oZipFold.GetFileAsync("MAIN_INFO_FILE")
         Dim sTxt As String = Await oInfoFile.ReadAllTextAsync
         Dim aLines As String() = sTxt.Split(vbCrLf)
 
@@ -260,6 +265,7 @@ Public NotInheritable Class MainPage
             If sTmp.StartsWith("Secs") Then Integer.TryParse(aFields(1), oNew.iSeconds)
             If sTmp.StartsWith("Random") Then oNew.bRandom = True
             If sTmp.StartsWith("ErrIgnore") Then oNew.bErrIgnore = True
+            If sTmp.StartsWith("Mail") Then oNew.sEmail = aFields(1)
         Next
 
         Return oNew
