@@ -130,6 +130,10 @@ NotInheritable Class App
     End Function
 
 
-    Public Shared gQuizy As New ListaQuiz
+    Public Shared Function GetQuizyRootFolder() As Windows.Storage.StorageFolder
+        Return Windows.Storage.ApplicationData.Current.LocalFolder
+    End Function
+
+    Public Shared gQuizy As New VBlibek.ListaQuiz(GetQuizyRootFolder.Path)
 
 End Class
