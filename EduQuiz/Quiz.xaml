@@ -20,7 +20,7 @@
 
         <WebView Grid.Row="1" Name="uiWebView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" NavigationStarting="wbViewer_NavigationStarting" />
 
-        <ListView Grid.Row="1" x:Name="uiListItems" Margin="2,5,5,5" HorizontalContentAlignment="Stretch"  >
+        <ListView Grid.Row="2" x:Name="uiListItems" Margin="2,5,5,5" HorizontalContentAlignment="Stretch"  >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>

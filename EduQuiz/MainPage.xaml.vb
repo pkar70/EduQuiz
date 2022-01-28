@@ -1,10 +1,7 @@
 ﻿
 ' dla Komiksiarzyk2 oraz dla Aśki (papugi)
 ' moze byc protocol QuizKurs://link
-' *TODO* losowa kolejność odpowiedzi
 
-' niektore funkcje przerobiłem z uzywania Windows.* na System.*, co daje uniezależnienie od UWP i możliwość późniejszego wykorzystania jako VB-LIB w MAUI
-' oznaczyłem je ' .Net
 
 Imports VBlibek
 
@@ -78,6 +75,9 @@ Public NotInheritable Class MainPage
         End Try
         ' *TODO* ale zostaje jeszcze ZIP file, który właściwie też powinien zostać usunieyu
         App.gQuizy.Delete(oQuiz)     ' z zapisem zmienionej wersji listy
+
+        uiListItems.ItemsSource = Nothing
+        uiListItems.ItemsSource = App.gQuizy.GetList
 
     End Sub
 

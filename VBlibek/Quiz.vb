@@ -193,6 +193,12 @@ Public Class QuizContent
         Return sBody
     End Function
 
+    Private Function File2MimeType(sFilename As String) As String
+        Dim sExt As String = System.IO.Path.GetExtension(sFilename).Substring(1)
+        If sExt = "mp3" Then Return "audio/mpeg"
+        Return "Image/" & sExt
+    End Function
+
     Private Async Function File2Base64(sFilename As String) As Task(Of String)
         DumpCurrMethod()
 
@@ -206,7 +212,7 @@ Public Class QuizContent
                 Await fileStr.CopyToAsync(memStream)
                 Dim bytes As Byte() = memStream.ToArray()
                 Dim dataStr As String = Convert.ToBase64String(bytes)
-                Dim sRet As String = "data:Image/" & System.IO.Path.GetExtension(sFilename).Substring(1) & ";base64," & dataStr
+                Dim sRet As String = "data:" & File2MimeType(sFilename) & ";base64," & dataStr
                 Return sRet
             End Using
         End Using

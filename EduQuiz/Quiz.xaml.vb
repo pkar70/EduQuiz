@@ -15,7 +15,6 @@
 
 ' może być usuwanie odpowiedzi, gdy ich nie ma (row=0)
 
-' Imports VBlibek.Quiz
 Imports VBlibek.pkarlibmodule
 
 Public NotInheritable Class Quiz
@@ -28,6 +27,8 @@ Public NotInheritable Class Quiz
     Dim moTimer As New DispatcherTimer
 
     Private mQuizContent As VBlibek.QuizContent
+
+    Private Shared moMediaPlayer As New Windows.Media.Playback.MediaPlayer
 
     Protected Overrides Sub onNavigatedTo(e As NavigationEventArgs)
         DumpCurrMethod()
@@ -74,10 +75,26 @@ Public NotInheritable Class Quiz
         If Not Await CheckCzyMoznaUruchomic() Then Return
 
         mQuizContent = New VBlibek.QuizContent(mQuiz, App.GetQuizyRootFolder.Path)
+        Await ReadQuizAsync()
 
         AddHandler moTimer.Tick, AddressOf Timer_Tick
 
+        TryStartBackMusic()
+
         Await GoNextQuestion()
+    End Sub
+    Private Async Sub TryStartBackMusic()
+
+        Dim sMusicFilePathname As String = IO.Path.Combine(App.GetQuizyRootFolder.Path, mQuiz.sFolder, "background.mp3")
+        If Not IO.File.Exists(sMusicFilePathname) Then Return
+
+        Dim oFile As Windows.Storage.StorageFile = Await Windows.Storage.StorageFile.GetFileFromPathAsync(sMusicFilePathname)
+        Dim oMediaSrc = Windows.Media.Core.MediaSource.CreateFromStorageFile(oFile)
+
+        moMediaPlayer.Source = oMediaSrc
+        moMediaPlayer.IsLoopingEnabled = True
+        moMediaPlayer.Play()
+
     End Sub
 
     Private Sub uiGoNext_Click(sender As Object, e As RoutedEventArgs)
@@ -194,6 +211,8 @@ Public NotInheritable Class Quiz
 
         End If
 
+        miCurrQuestion = Math.Max(1, miCurrQuestion)    ' pytania są od 1, nie od zera
+
         If Not mQuiz.bRandom Then
             uiProgCnt.Visibility = Visibility.Visible
             uiProgCnt.Value = miCurrQuestion
@@ -230,6 +249,7 @@ Public NotInheritable Class Quiz
         DumpCurrMethod()
         RemoveHandler moTimer.Tick, AddressOf Timer_Tick
         moTimer.Stop()
+        moMediaPlayer.Pause()
     End Sub
 
     Private Sub Timer_Tick(sender As Object, e As Object)
