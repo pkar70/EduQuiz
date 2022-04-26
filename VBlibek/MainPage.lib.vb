@@ -20,7 +20,7 @@ Public NotInheritable Class MainPage
 
         sUri = "https://tinyurl.com/" & sUri
 
-        Dim oWebClntHand As Net.Http.HttpClientHandler = New System.Net.Http.HttpClientHandler
+        Dim oWebClntHand As New System.Net.Http.HttpClientHandler
         oWebClntHand.AllowAutoRedirect = False
 
         Using oHttp As New System.Net.Http.HttpClient(oWebClntHand, True)
@@ -44,7 +44,7 @@ Public NotInheritable Class MainPage
                 Return Nothing
             End If
 
-            Dim oRetUri As Uri = New Uri(oHttpResp.Headers.Location.ToString)
+            Dim oRetUri As New Uri(oHttpResp.Headers.Location.ToString)
             oHttpResp.Dispose()
 
             Return oRetUri
@@ -78,6 +78,7 @@ Public NotInheritable Class MainPage
     End Function
 
     Public Shared Function UnpackQuizFile(sRootFolder As String, sFilename As String) As JedenQuiz
+        DumpCurrMethod()
 
         Dim sSourceFileName As String = System.IO.Path.Combine(sRootFolder, sFilename)
 
@@ -91,7 +92,7 @@ Public NotInheritable Class MainPage
 
         ' ucinamy 
 
-        Dim sError As String = ""
+        ' Dim sError As String = ""
         Try
             System.IO.Compression.ZipFile.ExtractToDirectory(sSourceFileName, sDestDir)
         Catch ex As Exception
@@ -99,16 +100,52 @@ Public NotInheritable Class MainPage
             Return Nothing
         End Try
 
-        Dim sInfoFilename As String = System.IO.Path.Combine(sRootFolder, sDirName, QuizContent.MAIN_INFO_FILE)
-
-        Dim oNewQuiz As JedenQuiz = VBlibek.ListaQuiz.ReadQuizInfo(sInfoFilename, sDirName)
+        Dim oNewQuiz As JedenQuiz = VBlib.ListaQuiz.TryReadQuizInfo(sDestDir, sDirName)
         If oNewQuiz Is Nothing Then
             sLastError = "ERROR: missing files in archive"
             Return Nothing
+        End If
+
+        If oNewQuiz.sSearchHdr <> "" Then
+            sLastError = TryCreateSearchIndex(oNewQuiz, sRootFolder)
+            If sLastError <> "" Then Return Nothing
         End If
 
         Return oNewQuiz
 
     End Function
 
+    Private Shared Function TryCreateSearchIndex(oNewQuiz As JedenQuiz, sRootFolder As String) As String
+        DumpCurrMethod()
+        ' jest to szukalne, to sprawdzamy czy trzeba utworzyć plik indeksowy do szukania, czy nie
+
+        Dim sQuizFolder As String = System.IO.Path.Combine(sRootFolder, oNewQuiz.sFolder)
+        If Not System.IO.Directory.Exists(sQuizFolder) Then Return "ERROR: no quiz folder?" ' nie powinno się zdarzyć, bo właśnie rozpakowaliśmy tam quiz
+
+        Dim sIndexFile As String = System.IO.Path.Combine(sQuizFolder, QuizContent.MAIN_INFO_INDEX_FILE)
+        If System.IO.File.Exists(sIndexFile) Then Return "" ' jest indeks, to go nie robimy
+
+        Dim sHtmlFile As String = System.IO.Path.Combine(sQuizFolder, QuizContent.MAIN_HTML_FILE)
+        If Not System.IO.File.Exists(sHtmlFile) Then
+            Return "ERROR: brak podstawowego pliku!"
+        End If
+
+        Dim oEduQuizDoc As New HtmlAgilityPack.HtmlDocument
+        oEduQuizDoc.Load(sHtmlFile)
+
+        Dim oBody As HtmlAgilityPack.HtmlNode = oEduQuizDoc.DocumentNode.SelectNodes("//body").ElementAt(0)
+        If oBody Is Nothing Then Return "ERROR: no BODY in main file"
+        Dim oSrchHdrs As HtmlAgilityPack.HtmlNodeCollection = oBody.SelectNodes(oNewQuiz.sSearchHdr)
+        If oSrchHdrs Is Nothing Then Return "ERROR: no entries for index"
+        DumpMessage("Bedzie w indeksie entries: " & oSrchHdrs.Count)
+        Dim sIndex As String = ""
+        For Each oHeader As HtmlAgilityPack.HtmlNode In oSrchHdrs
+            sIndex = sIndex & oHeader.InnerText & vbCrLf
+        Next
+
+        System.IO.File.WriteAllText(sIndexFile, sIndex)
+
+        Return ""
+
+    End Function
 End Class

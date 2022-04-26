@@ -15,50 +15,49 @@
 
 ' może być usuwanie odpowiedzi, gdy ich nie ma (row=0)
 
-Imports VBlibek.pkarlibmodule
+Imports vb14 = VBlib.pkarlibmodule14
 
 Public NotInheritable Class Quiz
     Inherits Page
 
-    Dim mQuiz As VBlibek.JedenQuiz = Nothing
-    Dim miCurrQuestion As Integer = -1  ' init potrzebny
-    Dim mRandom As New System.Random
-    Dim msAnswerLog As String = ""
-    Dim moTimer As New DispatcherTimer
+    Private mQuiz As VBlib.JedenQuiz = Nothing
+    Private miCurrQuestion As Integer = -1  ' init potrzebny
+    Private ReadOnly mRandom As New System.Random
+    Private msAnswerLog As String = ""
+    Private ReadOnly moTimer As New DispatcherTimer
+    Private mQuizContent As VBlib.QuizContent
 
-    Private mQuizContent As VBlibek.QuizContent
-
-    Private Shared moMediaPlayer As New Windows.Media.Playback.MediaPlayer
+    Private Shared ReadOnly moMediaPlayer As New Windows.Media.Playback.MediaPlayer
 
     Protected Overrides Sub onNavigatedTo(e As NavigationEventArgs)
-        DumpCurrMethod()
+        VBlib.DumpCurrMethod()
         Dim sParam As String = e.Parameter.ToString
         mQuiz = App.gQuizy.GetItem(sParam)
     End Sub
 
     Private Async Function CheckCzyMoznaUruchomic() As Task(Of Boolean)
-        DumpCurrMethod()
+        VBlib.DumpCurrMethod()
 
         ' jesli mamy licznik uruchomień
         If mQuiz.iRuns < Integer.MaxValue Then
             mQuiz.iRuns -= 1
             App.gQuizy.Save()
             If mQuiz.iRuns < 0 Then
-                Await DialogBoxAsync("Sorry, za dużo uruchomień")
+                Await vb14.DialogBoxAsync("Sorry, za dużo uruchomień")
                 Return False
             End If
         End If
 
         Dim sCurrDate As String = Date.Now.ToString("yyyyMMdd")
         If sCurrDate < mQuiz.sMinDate Then
-            DumpMessage("Curr date " & sCurrDate & " < minDate " & mQuiz.sMinDate)
-            Await DialogBoxAsync("Sorry, ale jeszcze za wcześnie - poczekaj parę dni")
+            vb14.DumpMessage("Curr date " & sCurrDate & " < minDate " & mQuiz.sMinDate)
+            Await vb14.DialogBoxAsync("Sorry, ale jeszcze za wcześnie - poczekaj parę dni")
             Return False
         End If
 
         If sCurrDate > mQuiz.sMaxDate Then
-            DumpMessage("Curr date " & sCurrDate & " > maxDate " & mQuiz.sMaxDate)
-            Await DialogBoxAsync("Sorry, ale już jest za późno - szkolenie wygasło")
+            vb14.DumpMessage("Curr date " & sCurrDate & " > maxDate " & mQuiz.sMaxDate)
+            Await vb14.DialogBoxAsync("Sorry, ale już jest za późno - szkolenie wygasło")
             Return False
         End If
 
@@ -67,15 +66,21 @@ Public NotInheritable Class Quiz
     End Function
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
         'ProgRingInit(False, True)
 
         If mQuiz Is Nothing Then Return
         uiTitle.Text = mQuiz.sName
         If Not Await CheckCzyMoznaUruchomic() Then Return
 
-        mQuizContent = New VBlibek.QuizContent(mQuiz, App.GetQuizyRootFolder.Path)
-        Await ReadQuizAsync()
+        mQuizContent = New VBlib.QuizContent(mQuiz, App.GetQuizyRootFolder.Path)
+        mQuizContent.ReadQuiz()
+
+        If mQuiz.sSearchHdr = "" Then
+            uiSearchGrid.Visibility = Visibility.Collapsed
+        Else
+            uiSearchGrid.Visibility = Visibility.Visible
+        End If
 
         AddHandler moTimer.Tick, AddressOf Timer_Tick
 
@@ -98,26 +103,25 @@ Public NotInheritable Class Quiz
     End Sub
 
     Private Sub uiGoNext_Click(sender As Object, e As RoutedEventArgs)
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
+#Disable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
         GoNextQuestion()
+#Enable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
     End Sub
 
-    Private Async Function ReadQuizAsync() As Task
-        DumpCurrMethod()
+    Private Sub ReadQuiz()
+        vb14.DumpCurrMethod()
 
         Dim iMaxQuestion As Integer = mQuizContent.ReadQuiz()
-        If iMaxQuestion < 1 Then
-            Await DialogBoxAsync(mQuizContent.sLastError)
-            Return
-        End If
+        If iMaxQuestion < 1 Then Return
 
         uiProgCnt.Maximum = iMaxQuestion
 
-    End Function
+    End Sub
 
 
     Private Async Function DialogBoxWithTimeoutAsync(sMsg As String, iMsTimeout As Integer) As Task
-        Dim oMsg As Windows.UI.Popups.MessageDialog = New Windows.UI.Popups.MessageDialog(sMsg)
+        Dim oMsg As New Windows.UI.Popups.MessageDialog(sMsg)
         Dim oWait = oMsg.ShowAsync
         Await Task.Delay(iMsTimeout)
         Try
@@ -132,7 +136,7 @@ Public NotInheritable Class Quiz
 
         ' zapisanie odpowiedzi
         msAnswerLog = msAnswerLog & "Quesion: " & iCurrQuestion & vbTab & "answers: "
-        For Each oAnswer As VBlibek.JednoPytanie In uiListItems.ItemsSource
+        For Each oAnswer As VBlib.JednoPytanie In uiListItems.ItemsSource
             If oAnswer.bChecked Then
                 msAnswerLog &= "T"
             Else
@@ -143,7 +147,7 @@ Public NotInheritable Class Quiz
 
         ' sprawdzenie odpowiedzi
         Dim bGood As Boolean = True
-        For Each oAnswer As VBlibek.JednoPytanie In uiListItems.ItemsSource
+        For Each oAnswer As VBlib.JednoPytanie In uiListItems.ItemsSource
             If oAnswer.bChecked <> oAnswer.bTrue Then bGood = False
         Next
 
@@ -156,7 +160,7 @@ Public NotInheritable Class Quiz
 
             If mQuiz.bErrIgnore Then Return True
 
-            For Each oAnswer As VBlibek.JednoPytanie In uiListItems.ItemsSource
+            For Each oAnswer As VBlib.JednoPytanie In uiListItems.ItemsSource
                 oAnswer.bChecked = False
             Next
             Return False
@@ -166,7 +170,7 @@ Public NotInheritable Class Quiz
     End Function
 
     Private Async Function GoNextQuestion() As Task
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
 
         moTimer.Stop()
 
@@ -182,16 +186,16 @@ Public NotInheritable Class Quiz
 
         If mQuiz.bRandom Then
             miCurrQuestion = mRandom.Next(1, mQuizContent.GetMaxQuestion)
-            DumpMessage("Losuje pytanie: " & miCurrQuestion)
+            vb14.DumpMessage("Losuje pytanie: " & miCurrQuestion)
         Else
 
             If miCurrQuestion >= mQuizContent.GetMaxQuestion Then
                 Await DialogBoxWithTimeoutAsync("KONIEC :)", 5000)
 
-                If mQuiz.sEmail <> "" Or GetSettingsBool("allowEmail") Then
-                    If Await DialogBoxYNAsync("Czy chcesz wysłać rezultat?") Then
+                If mQuiz.sEmail <> "" Or vb14.GetSettingsBool("allowEmail") Then
+                    If Await vb14.DialogBoxYNAsync("Czy chcesz wysłać rezultat?") Then
 
-                        Dim oMsg As Email.EmailMessage = New Windows.ApplicationModel.Email.EmailMessage()
+                        Dim oMsg As New Windows.ApplicationModel.Email.EmailMessage()
                         oMsg.Subject = "Rezultat testu/quizu " & mQuiz.sName
                         Dim sTxt As String = "Załączam rezultat dzisiejszego testu" & vbCrLf & vbCrLf &
                                 "Data: " & Date.Now & vbCrLf & vbCrLf & msAnswerLog
@@ -207,34 +211,43 @@ Public NotInheritable Class Quiz
             End If
 
             miCurrQuestion += 1
-            DumpMessage("Kolejne pytanie: " & miCurrQuestion)
+            vb14.DumpMessage("Kolejne pytanie: " & miCurrQuestion)
 
         End If
 
         miCurrQuestion = Math.Max(1, miCurrQuestion)    ' pytania są od 1, nie od zera
 
-        If Not mQuiz.bRandom Then
-            uiProgCnt.Visibility = Visibility.Visible
-            uiProgCnt.Value = miCurrQuestion
-        End If
-
-        Dim sBody As String = mQuizContent.CreateHtmlBody(miCurrQuestion)
-        If sBody = "" Then
-            ' nie ma, czyli pytanie za daleko?
-            uiWebView.NavigateToString("")
-        Else
-            If mQuizContent.moAnswerList IsNot Nothing Then uiListItems.ItemsSource = mQuizContent.moAnswerList
-            sBody = "<body>" & Await mQuizContent.InsertImages(sBody) & "</body>"
-            uiWebView.NavigateToString("<html>" & mQuizContent.CreateHtmlHead() & sBody & "</html>")
-        End If
+        Await IdzDoPytania(miCurrQuestion)
 
         moTimer.Interval = TimeSpan.FromSeconds(mQuiz.iSeconds)
         moTimer.Start()
 
     End Function
 
+    Private Async Function IdzDoPytania(iNumer As Integer) As Task
+        If Not mQuiz.bRandom Then
+            uiProgCnt.Visibility = Visibility.Visible
+            uiProgCnt.Value = iNumer
+        End If
+
+        Dim sBody As String = mQuizContent.CreateHtmlBody(iNumer)
+        If sBody = "" Then
+            ' nie ma, czyli pytanie za daleko?
+            uiWebView.NavigateToString("")
+        Else
+            If mQuizContent.moAnswerList IsNot Nothing Then
+                uiQuestionRow.Height = New GridLength(1, GridUnitType.Star)
+                uiListItems.ItemsSource = mQuizContent.moAnswerList
+            End If
+            sBody = "<body>" & Await mQuizContent.InsertImages(sBody) & "</body>"
+            uiWebView.NavigateToString("<html>" & mQuizContent.CreateHtmlHead() & sBody & "</html>")
+        End If
+
+    End Function
+
+
     Private Sub wbViewer_NavigationStarting(sender As WebView, args As WebViewNavigationStartingEventArgs)
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
 
         If args.Uri Is Nothing Then Return
 
@@ -246,14 +259,86 @@ Public NotInheritable Class Quiz
 
     End Sub
     Private Sub Page_Unloaded(sender As Object, e As RoutedEventArgs)
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
         RemoveHandler moTimer.Tick, AddressOf Timer_Tick
         moTimer.Stop()
         moMediaPlayer.Pause()
     End Sub
 
     Private Sub Timer_Tick(sender As Object, e As Object)
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
         uiGoNext_Click(Nothing, Nothing)
     End Sub
+
+    Private Sub uiSearchTerm_TextChanged(sender As Object, e As TextChangedEventArgs)
+        If uiSearchTerm.Text.Length < 3 Then
+            uiSearchList.ItemsSource = Nothing
+            Return
+        End If
+
+        Dim oLista As New List(Of JedenSearchTerm)
+        Dim iNumer As Integer = 1
+        For Each sTerm As String In mQuizContent.maSearchTerms
+            If sTerm.ToLower.Contains(uiSearchTerm.Text) Then
+                Dim oNew As New JedenSearchTerm
+                oNew.sTekst = sTerm
+                oNew.iNumer = iNumer
+                oLista.Add(oNew)
+            End If
+            iNumer += 1
+        Next
+
+        uiSearchList.ItemsSource = oLista
+
+    End Sub
+
+    Private Sub uiGoTerm_Tapped(sender As Object, e As TappedRoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oItem As JedenSearchTerm = TryCast(oFE.DataContext, JedenSearchTerm)
+        If oItem Is Nothing Then Return
+
+#Disable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
+        IdzDoPytania(oItem.iNumer)
+#Enable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
+    End Sub
 End Class
+
+Public Class JedenSearchTerm
+    Public Property sTekst As String
+    Public Property iNumer As Integer
+End Class
+
+
+'Public Class KonwersjaVisibility
+'    Implements IValueConverter
+
+'    ' Define the Convert method to change a DateTime object to
+'    ' a month string.
+'    Public Function Convert(ByVal value As Object,
+'        ByVal targetType As Type, ByVal parameter As Object,
+'        ByVal language As System.String) As Object _
+'        Implements IValueConverter.Convert
+
+'        Dim bValue As Boolean = CType(value, Boolean)
+'        Dim iNaOdwrot As Integer = CType(parameter, Integer)
+'        If iNaOdwrot <> 0 Then bValue = Not bValue
+
+
+'        If bValue Then
+'            Return Visibility.Visible
+'        Else
+'            Return Visibility.Collapsed
+'        End If
+
+'    End Function
+
+'    ' ConvertBack is not implemented for a OneWay binding.
+'    Public Function ConvertBack(ByVal value As Object,
+'        ByVal targetType As Type, ByVal parameter As Object,
+'        ByVal language As System.String) As Object _
+'        Implements IValueConverter.ConvertBack
+
+'        Throw New NotImplementedException
+
+'    End Function
+'End Class

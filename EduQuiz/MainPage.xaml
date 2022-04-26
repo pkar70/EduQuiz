@@ -50,7 +50,7 @@
     <Page.BottomAppBar>
         <CommandBar ClosedDisplayMode="Minimal" >
             <AppBarButton Icon="Download" Name="uiDownload" Label="Ściągnij quiz" Click="uiDownload_Click" />
-            <AppBarButton Icon="Setting" Label="Settings" Click="uiSetup_Click"  />
+            <!--<AppBarButton Icon="Setting" Label="Settings" Click="uiSetup_Click"  />-->
         </CommandBar>
 
     </Page.BottomAppBar>

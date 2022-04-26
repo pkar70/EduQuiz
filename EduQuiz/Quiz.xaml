@@ -8,8 +8,14 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded" Unloaded="Page_Unloaded">
 
+    <UserControl.Resources>
+        <local:KonwersjaVisibility x:Key="KonwersjaVisibility" />
+    </UserControl.Resources>
+
+
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" x:Name="uiQuestionRow"/>
@@ -18,9 +24,33 @@
 
         <TextBlock Grid.Row="0" Name="uiTitle" HorizontalAlignment="Center" FontSize="18" />
 
-        <WebView Grid.Row="1" Name="uiWebView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" NavigationStarting="wbViewer_NavigationStarting" />
+        <Grid Grid.Row="1" Name="uiSearchGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition MaxHeight="100" />
+            </Grid.RowDefinitions>
+            <TextBox Name="uiSearchTerm" TextChanged="uiSearchTerm_TextChanged" />
+            <ListView Grid.Row="3" x:Name="uiSearchList" Margin="2,5,5,5" HorizontalContentAlignment="Stretch"  >
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
 
-        <ListView Grid.Row="2" x:Name="uiListItems" Margin="2,5,5,5" HorizontalContentAlignment="Stretch"  >
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0" Tapped="uiGoTerm_Tapped" >
+                            <TextBlock Grid.Column="1" Text="{Binding sTekst, Mode=OneWay }"  />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+        </Grid>
+        
+        <WebView Grid.Row="2" Name="uiWebView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" NavigationStarting="wbViewer_NavigationStarting" />
+
+        <ListView Grid.Row="3" x:Name="uiListItems" Margin="2,5,5,5" HorizontalContentAlignment="Stretch"  >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
@@ -35,15 +65,16 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
 
-                        <CheckBox Grid.Column="0" MinWidth="20" IsChecked="{Binding bChecked, Mode=TwoWay }" />
+                        <CheckBox Grid.Column="0" MinWidth="20" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=1}" />
+                        <RadioButton Grid.Column="0" MinWidth="20" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=0}" />
                         <TextBlock Grid.Column="1" Text="{Binding sTekst, Mode=OneWay }"  />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
 
-        <ProgressBar Grid.Row="3" HorizontalAlignment="Stretch" Visibility="Collapsed" Name="uiProgCnt" />
-        <Button Grid.Row="3" HorizontalAlignment="Right" Margin="10,15,10,10" Click="uiGoNext_Click" >
+        <ProgressBar Grid.Row="4" HorizontalAlignment="Stretch" Visibility="Collapsed" Name="uiProgCnt" />
+        <Button Grid.Row="4" HorizontalAlignment="Right" Margin="10,15,10,10" Click="uiGoNext_Click" >
             <SymbolIcon Symbol="Forward" />
         </Button>
 

@@ -1,9 +1,9 @@
 ﻿
-Imports vb14 = VBlib.pkarlibmodule14
-
 NotInheritable Class App
     Inherits Application
 
+
+#Region "wizard"
     ''' <summary>
     ''' Invoked when the application is launched normally by the end user.  Other entry points
     ''' will be used when the application is launched to open a specific file, to display
@@ -51,15 +51,7 @@ NotInheritable Class App
         deferral.Complete()
     End Sub
 
-    ' obsluga lokalnych komend
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-    Private Async Function AppServiceLocalCommand(sCommand As String) As Task(Of String)
-        Return ""
-    End Function
-#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-
     ' RemoteSystems, Timer
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Protected Overrides Async Sub OnBackgroundActivated(args As BackgroundActivatedEventArgs)
         moTaskDeferal = args.TaskInstance.GetDeferral() ' w pkarmodule.App
 
@@ -80,7 +72,6 @@ NotInheritable Class App
         If Not bNoComplete Then moTaskDeferal.Complete()
 
     End Sub
-#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
 
     ' CommandLine, Toasts
@@ -93,8 +84,6 @@ NotInheritable Class App
             Dim commandLine As CommandLineActivatedEventArgs = TryCast(args, CommandLineActivatedEventArgs)
             Dim operation As CommandLineActivationOperation = commandLine?.Operation
             Dim strArgs As String = operation?.Arguments
-
-            InitLib(strArgs.Split(" ").ToList())
 
             If Not String.IsNullOrEmpty(strArgs) Then
                 Await ObsluzCommandLine(strArgs)
@@ -134,16 +123,14 @@ NotInheritable Class App
             Window.Current.Content = mRootFrame
         End If
 
-        InitLib(Nothing)
-
         Return mRootFrame
     End Function
 
+#End Region
 
-    Public Shared Function GetQuizyRootFolder() As Windows.Storage.StorageFolder
-        Return Windows.Storage.ApplicationData.Current.LocalFolder
+    ' obsluga lokalnych komend
+    Private Async Function AppServiceLocalCommand(sCommand As String) As Task(Of String)
+        Return ""
     End Function
-
-    Public Shared gQuizy As New VBlib.ListaQuiz(GetQuizyRootFolder.Path)
 
 End Class

@@ -44,7 +44,7 @@ Namespace My.Resources
         Friend Shared ReadOnly Property ResourceManager() As Global.System.Resources.ResourceManager
             Get
                 If Object.ReferenceEquals(resourceMan, Nothing) Then
-                    Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("VBlibekStd.Resource_EN", GetType(Resource_EN).GetTypeInfo.Assembly)
+                    Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("VBlib.Resource_EN", GetType(Resource_EN).GetTypeInfo.Assembly)
                     resourceMan = temp
                 End If
                 Return resourceMan

@@ -9,13 +9,14 @@
     Public Property iSeconds As Integer = Integer.MaxValue
     Public Property bErrIgnore As Boolean = False
     Public Property sEmail As String = ""
+    Public Property sSearchHdr As String = ""
 End Class
 
 Public Class ListaQuiz
     Private mItems As List(Of JedenQuiz)
 
     Private Const msFileName As String = "quizy.json"
-    Private msRootPath As String = ""
+    Private ReadOnly msRootPath As String = ""
 
     Public Sub New(sRootPath As String)
         msRootPath = sRootPath
@@ -113,8 +114,7 @@ Public Class ListaQuiz
             If bNew Then
 
                 ' Dim oNew As New JedenQuiz
-                Dim sInfoFilename As String = System.IO.Path.Combine(sFolder, QuizContent.MAIN_INFO_FILE)
-                Dim oNew As JedenQuiz = ReadQuizInfo(sInfoFilename, System.IO.Path.GetFileName(sFolder))
+                Dim oNew As JedenQuiz = TryReadQuizInfo(sFolder, System.IO.Path.GetFileName(sFolder))
 
                 If oNew IsNot Nothing Then
                     iCount += 1
@@ -142,9 +142,20 @@ Public Class ListaQuiz
         Return Nothing
     End Function
 
-    Public Shared Function ReadQuizInfo(sInfoFilename As String, sDirName As String) As JedenQuiz
+    Public Shared Function TryReadQuizInfo(sRootFolder As String, sDirName As String) As JedenQuiz
         ' czysty .Net 
 
+        Dim sInfoFilename As String = System.IO.Path.Combine(sRootFolder, sDirName, QuizContent.MAIN_INFO_JSON_FILE)
+        If IO.File.Exists(sInfoFilename) Then Return ReadQuizInfoJSON(sInfoFilename, sDirName)
+
+        sInfoFilename = System.IO.Path.Combine(sRootFolder, sDirName, QuizContent.MAIN_INFO_TXT_FILE)
+        If IO.File.Exists(sInfoFilename) Then Return ReadQuizInfoTXT(sInfoFilename, sDirName)
+
+        Return Nothing
+
+    End Function
+
+    Private Shared Function ReadQuizInfoTXT(sInfoFilename As String, sDirName As String) As JedenQuiz
         If Not System.IO.File.Exists(sInfoFilename) Then Return Nothing
 
         'Dim aLines As String() = sFileContent.Split(vbCrLf)
@@ -166,17 +177,33 @@ Public Class ListaQuiz
             If sTmp.StartsWith("Random") Then oNew.bRandom = True
             If sTmp.StartsWith("ErrIgnore") Then oNew.bErrIgnore = True
             If sTmp.StartsWith("Mail") Then oNew.sEmail = aFields(1)
+            If sTmp.StartsWith("Search") Then oNew.sSearchHdr = aFields(1)
         Next
 
         Return oNew
-
     End Function
 
+    Private Shared Function ReadQuizInfoJSON(sInfoFilename As String, sDirName As String) As JedenQuiz
+        If Not System.IO.File.Exists(sInfoFilename) Then Return Nothing
 
+        Dim sTxt As String = System.IO.File.ReadAllText(sInfoFilename)
+        If sTxt Is Nothing OrElse sTxt.Length < 5 Then Return Nothing
+
+        Try
+            Dim oNew As JedenQuiz = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(JedenQuiz))
+            oNew.sFolder = sDirName
+            If String.IsNullOrEmpty(oNew.sName) Then oNew.sName = sDirName
+            Return oNew
+        Catch ex As Exception
+            Return Nothing
+        End Try
+
+    End Function
 End Class
 
 Public Class JednoPytanie
     Public Property sTekst As String
     Public Property bTrue As Boolean = False
     Public Property bChecked As Boolean = False
+    Public Property bSingleAnswer As Boolean = False
 End Class

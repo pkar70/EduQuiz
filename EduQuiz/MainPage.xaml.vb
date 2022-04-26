@@ -3,7 +3,14 @@
 ' moze byc protocol QuizKurs://link
 
 
-Imports VBlibek
+' 2) <ul>[SINGLE] daje radiobuttony (radio , check, tylko jeden z nich Collapsed a drugi pokazywany)
+
+' gdy istnieje plik topics.txt to wtedy mozna wyszukiwac w nim, a to jest przenoszone na <h2> w pliku HTML
+' ( find "<h2>" quizkurs.htm > topics.txt )
+
+
+Imports vb14 = VBlib.pkarlibmodule14
+
 
 Public NotInheritable Class MainPage
     Inherits Page
@@ -11,17 +18,48 @@ Public NotInheritable Class MainPage
     Private miBadCnt As Integer = 0     ' blokada abuse na tinyurl
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        VBlibek.pkarlibmodule.InitDump(GetSettingsInt("debugLogLevel"), Windows.Storage.ApplicationData.Current.TemporaryFolder.Path)
 
         Me.ShowAppVers()
-        ProgRingInit(True, False)
+        Me.ProgRingInit(True, False)
+
+        If Not vb14.GetSettingsBool("defaultImported") Then
+            Await ImportDefaultKursy()
+            vb14.SetSettingsBool("defaultImported", True)
+        End If
+
 
         Await PokazListeQuizow()
     End Sub
 
+    Private Async Function ImportDefaultKursy() As Task
+
+        Dim oFile As Windows.Storage.StorageFile
+        For iLoop = 1 To 9 ' max 9 kursów (żeby jedna cyfra)
+            Dim sUri = "ms-appx://defaulty/default" & iLoop.ToString
+            Try
+                oFile = Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(New Uri(sUri))
+                If oFile Is Nothing Then Exit For  ' nie ma, to następnych też nie będzie
+            Catch ex As Exception
+                ' zapewne brak pliku
+                Exit For
+            End Try
+
+            Dim oFold As Windows.Storage.StorageFolder = App.GetQuizyRootFolder
+            Await oFile.CopyAsync(oFold)
+
+            Dim oNew As VBlib.JedenQuiz = Await UnpackQuizFile("default" & iLoop)
+            If oNew Is Nothing Then Return
+
+            App.gQuizy.Add(oNew)
+            App.gQuizy.Save()
+
+        Next
+
+    End Function
+
     Private Async Sub uiDownload_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim sLink As String = Await DialogBoxInputDirectAsync("Podaj ID quizu:")
+        Dim sLink As String = Await vb14.DialogBoxInputDirectAsync("Podaj ID quizu:")
         If sLink = "" Then Return
 
         Dim oUri As Uri = Await NormalizeUrl(sLink)
@@ -30,7 +68,7 @@ Public NotInheritable Class MainPage
         Dim sDirName As String = Await DownloadQuizFile(oUri)
         If sDirName = "" Then Return
 
-        Dim oNew As JedenQuiz = Await UnpackQuizFile(sDirName)
+        Dim oNew As VBlib.JedenQuiz = Await UnpackQuizFile(sDirName)
         If oNew Is Nothing Then Return
 
         App.gQuizy.Add(oNew)
@@ -39,15 +77,15 @@ Public NotInheritable Class MainPage
 
     End Sub
 
-    Private Sub uiSetup_Click(sender As Object, e As RoutedEventArgs)
-        Me.Frame.Navigate(GetType(Setup))
-    End Sub
+    'Private Sub uiSetup_Click(sender As Object, e As RoutedEventArgs)
+    '    Me.Frame.Navigate(GetType(Setup))
+    'End Sub
 
 
     Private Sub uiGoQuiz_Tapped(sender As Object, e As TappedRoutedEventArgs)
         Dim oFE As FrameworkElement = TryCast(sender, FrameworkElement)
         If oFE Is Nothing Then Return
-        Dim oItem As JedenQuiz = TryCast(oFE.DataContext, JedenQuiz)
+        Dim oItem As VBlib.JedenQuiz = TryCast(oFE.DataContext, VBlib.JedenQuiz)
         If oItem Is Nothing Then Return
         Dim sQuizName As String = oItem.sName
 
@@ -61,9 +99,9 @@ Public NotInheritable Class MainPage
     Private Async Sub uiDelQuiz_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = TryCast(sender, FrameworkElement)
         If oFE Is Nothing Then Return
-        Dim oQuiz As JedenQuiz = TryCast(oFE.DataContext, JedenQuiz)
+        Dim oQuiz As VBlib.JedenQuiz = TryCast(oFE.DataContext, VBlib.JedenQuiz)
 
-        If Not Await DialogBoxYNAsync("Czy na pewno chcesz usunąć Quiz " & oQuiz.sName & "?") Then Return
+        If Not Await vb14.DialogBoxYNAsync("Czy na pewno chcesz usunąć Quiz " & oQuiz.sName & "?") Then Return
 
         Dim oRootFold As Windows.Storage.StorageFolder = App.GetQuizyRootFolder
         Try
@@ -89,11 +127,11 @@ Public NotInheritable Class MainPage
         App.gQuizy.Load()
         Dim iCount As Integer = App.gQuizy.CheckExistence
         If iCount > 0 Then
-            Await DialogBoxAsync("Zniknięto " & iCount & " quizów!")
+            Await vb14.DialogBoxAsync("Zniknięto " & iCount & " quizów!")
         End If
         Dim iCount1 As Integer = App.gQuizy.CheckOrfants
         If iCount1 > 0 Then
-            Await DialogBoxAsync("Znaleziono " & iCount1 & " quizów!")
+            Await vb14.DialogBoxAsync("Znaleziono " & iCount1 & " quizów!")
         End If
 
         If iCount + iCount1 > 0 Then App.gQuizy.Save()
@@ -110,11 +148,11 @@ Public NotInheritable Class MainPage
 
         If miBadCnt > 3 Then Return Nothing
 
-        Dim oUri As Uri = Await VBlibek.MainPage.NormalizeUrlAsync(sUri)
+        Dim oUri As Uri = Await VBlib.MainPage.NormalizeUrlAsync(sUri)
         If oUri Is Nothing Then
             miBadCnt += 1
             If miBadCnt > 3 Then uiDownload.IsEnabled = False
-            Await DialogBoxAsync(VBlibek.MainPage.sLastError)
+            Await vb14.DialogBoxAsync(VBlib.MainPage.sLastError)
             Return Nothing
         End If
 
@@ -134,15 +172,15 @@ Public NotInheritable Class MainPage
         Dim iInd As Integer = sFilename.LastIndexOf("/")
         sFilename = sFilename.Substring(iInd + 1)
         If System.IO.File.Exists(System.IO.Path.Combine(oFold.Path, sFilename)) Then
-            If Not Await DialogBoxYNAsync("Taki plik już istnieje, overwrite?") Then Return ""
+            If Not Await vb14.DialogBoxYNAsync("Taki plik już istnieje, overwrite?") Then Return ""
             System.IO.File.Delete(System.IO.Path.Combine(oFold.Path, sFilename))
         End If
 
         ProgRingShow(True)
 
         Dim sUserAgent As String = "QuizKurs " & GetAppVers()
-        If Not Await VBlibek.MainPage.DownloadQuizFileAsync(oUri, sUserAgent, oFold.Path, sFilename) Then
-            Await DialogBoxAsync(VBlibek.MainPage.sLastError)
+        If Not Await VBlib.MainPage.DownloadQuizFileAsync(oUri, sUserAgent, oFold.Path, sFilename) Then
+            Await vb14.DialogBoxAsync(VBlib.MainPage.sLastError)
         End If
 
         ProgRingShow(False)
@@ -160,18 +198,18 @@ Public NotInheritable Class MainPage
 
     End Function
 
-    Private Async Function UnpackQuizFile(sFilename As String) As Task(Of JedenQuiz)
+    Private Async Function UnpackQuizFile(sFilename As String) As Task(Of VBlib.JedenQuiz)
 
         ' ewentualnie szyfrowanie pliku ZIP?
 
-        ProgRingShow(True)
+        Me.ProgRingShow(True)
 
-        Dim oNewQuiz As JedenQuiz = VBlibek.MainPage.UnpackQuizFile(App.GetQuizyRootFolder.Path, sFilename)
+        Dim oNewQuiz As VBlib.JedenQuiz = VBlib.MainPage.UnpackQuizFile(App.GetQuizyRootFolder.Path, sFilename)
 
-        ProgRingShow(False)
+        Me.ProgRingShow(False)
 
         If oNewQuiz Is Nothing Then
-            Await DialogBoxAsync(VBlibek.MainPage.sLastError)
+            Await vb14.DialogBoxAsync(VBlib.MainPage.sLastError)
             Return Nothing
         End If
 

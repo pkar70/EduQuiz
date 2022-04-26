@@ -16,18 +16,22 @@
 ' może być usuwanie odpowiedzi, gdy ich nie ma (row=0)
 
 Public Class QuizContent
-    Private mQuiz As JedenQuiz = Nothing
+    Private ReadOnly mQuiz As JedenQuiz = Nothing
 
-    Private miCurrQuestion As Integer = -1  ' init potrzebny
+    ' Private miCurrQuestion As Integer = -1  ' init potrzebny
     Private miMaxQuestion As Integer = 0    ' wyliczane przy wczytywaniu
     Private mEduQuizDoc As HtmlAgilityPack.HtmlDocument = Nothing
-    Private mRandom As New System.Random
-    Private mQuizRootFolder As String = ""
+    ' Private mRandom As New System.Random
+    Private ReadOnly mQuizRootFolder As String = ""
 
-    Private Const MAIN_HTML_FILE As String = "quizkurs.htm"
-    Public Const MAIN_INFO_FILE As String = "quizkurs.txt"
+    Public maSearchTerms As String()
 
-    Public sLastError As String = ""
+    Public Const MAIN_HTML_FILE As String = "quizkurs.htm"
+    Public Const MAIN_INFO_TXT_FILE As String = "quizkurs.txt"
+    Public Const MAIN_INFO_JSON_FILE As String = "quizkurs.txt"
+    Public Const MAIN_INFO_INDEX_FILE As String = "quizkurs.index.txt"
+
+    ' Public sLastError As String = ""
 
     Public Sub New(oItem As JedenQuiz, sRootFolder As String)
         mQuiz = oItem
@@ -53,13 +57,13 @@ Public Class QuizContent
 
         Dim sFold As String = GetQuizFolder()
         If sFold = "" Then
-            sLastError = "No Quiz folder"
+            DialogBox("No Quiz folder")
             Return 0
         End If
 
         Dim sHtmlFile As String = System.IO.Path.Combine(sFold, MAIN_HTML_FILE)
         If Not System.IO.File.Exists(sHtmlFile) Then
-            sLastError = "ERROR: brak podstawowego pliku!"
+            DialogBox("ERROR: brak podstawowego pliku!")
             Return 0
         End If
 
@@ -69,9 +73,14 @@ Public Class QuizContent
         ' policzmy teraz ile jest itemów
         miMaxQuestion = PoliczQuestions()
         If miMaxQuestion < 0 Then
-            sLastError = "ERROR: brak pytan?"
+            DialogBox("ERROR: brak pytan?")
             mEduQuizDoc = Nothing
             Return 0
+        End If
+
+        Dim sIndexFile As String = System.IO.Path.Combine(sFold, MAIN_INFO_INDEX_FILE)
+        If IO.File.Exists(sIndexFile) Then
+            maSearchTerms = IO.File.ReadAllLines(sIndexFile)
         End If
 
         Return miMaxQuestion
@@ -128,6 +137,8 @@ Public Class QuizContent
                     If oNode.InnerHtml.Contains("[QUIZ]") Then
                         ' obsługa PYTAŃ
                         moAnswerList = New ObjectModel.ObservableCollection(Of JednoPytanie)
+                        Dim bSingleAnswer As Boolean = False
+                        If oNode.InnerHtml.Contains("[SINGLE]") Then bSingleAnswer = True
 
                         ' dodaj pytania
                         Dim oLiList As HtmlAgilityPack.HtmlNodeCollection = oNode.SelectNodes("li")
@@ -137,10 +148,11 @@ Public Class QuizContent
                             Dim oNew As New JednoPytanie
                             oNew.sTekst = oLiItem.InnerHtml.Replace("[TRUE]", "")
                             If oLiItem.InnerHtml.Contains("[TRUE]") Then oNew.bTrue = True
-
+                            oNew.bSingleAnswer = bSingleAnswer
                             moAnswerList.Add(oNew)
                         Next
 
+                        oNode = oNode.NextSibling
                         Continue While  ' nie dodajemy zawartości tego UL do tekstu głównego
                     End If
                 End If
@@ -220,6 +232,4 @@ Public Class QuizContent
     End Function
 End Class
 
-Public Module Quiz
 
-End Module

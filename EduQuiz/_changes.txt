@@ -1,0 +1,7 @@
+
+2022.04.26
+* pod³¹czenie nowych module.vb (by³y do \moje\, teraz do nowszych wersji w \mylibs\)
+* zmiana Konwerter na ten z pkmodule (a nie w quiz.xaml.cs)
+* usun¹³em nugety JSON i HTMLAgility z app (bo jest tylko w VBlib)
+* _changes i _tudus
+* zmienna do defsIni (jako dokumentacja)
