@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>VBlib</RootNamespace>
     <TargetFramework>netstandard1.4</TargetFramework>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>

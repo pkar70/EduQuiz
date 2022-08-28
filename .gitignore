@@ -361,3 +361,14 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+#moje
+**/Moje/
+Moje/
+descript.ion
+*.apk
+/Moje/
+pswd.vb
+pswd.cs
+pswd.lib.vb
