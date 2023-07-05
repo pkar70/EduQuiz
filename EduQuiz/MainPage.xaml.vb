@@ -111,7 +111,7 @@ Public NotInheritable Class MainPage
         Catch ex As Exception
             ' bo może to być przecież "(deleted)" z listy, prawda?
         End Try
-        ' *TODO* ale zostaje jeszcze ZIP file, który właściwie też powinien zostać usunieyu
+        ' *TODO* ale zostaje jeszcze ZIP file, który właściwie też powinien zostać usuniety
         App.gQuizy.Delete(oQuiz)     ' z zapisem zmienionej wersji listy
 
         uiListItems.ItemsSource = Nothing

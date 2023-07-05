@@ -1,1 +1,8 @@
+do pliku definicyjnego: mozliwosc powtarzania pytan (pokazywanie pytania wiecej niz raz)
+
+na nugety
+
+moze jest jakis w .Net "wariat" robiacy permutacje?
+
+limit sekund dla pytania (a nie global)
 

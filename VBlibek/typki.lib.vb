@@ -1,4 +1,7 @@
-﻿Public Class JedenQuiz
+﻿
+Public Class JedenQuiz
+    Inherits pkar.BaseStruct
+
     Public Property sName As String
     Public Property sFolder As String
     Public Property sDesc As String
@@ -13,44 +16,51 @@
 End Class
 
 Public Class ListaQuiz
+    Inherits pkar.BaseList(Of JedenQuiz)
+
     Private mItems As List(Of JedenQuiz)
 
-    Private Const msFileName As String = "quizy.json"
+    'Private Const msFileName As String = "quizy.json"
     Private ReadOnly msRootPath As String = ""
 
     Public Sub New(sRootPath As String)
+        MyBase.New(sRootPath, "quizy.json")
         msRootPath = sRootPath
     End Sub
 
-    Public Function Load(Optional bForce As Boolean = False) As Boolean
-        If IsLoaded() AndAlso Not bForce Then Return True
+    'Public Function Load(Optional bForce As Boolean = False) As Boolean
+    '    If IsLoaded() AndAlso Not bForce Then Return True
 
-        Dim sFilename As String = System.IO.Path.Combine(msRootPath, msFileName)
-        Dim sTxt As String = System.IO.File.ReadAllText(sFilename)
-        If sTxt Is Nothing OrElse sTxt.Length < 5 Then
-            mItems = New List(Of JedenQuiz)
-            Return False
-        End If
+    '    Dim sFilename As String = System.IO.Path.Combine(msRootPath, msFileName)
+    '    Dim sTxt As String = System.IO.File.ReadAllText(sFilename)
+    '    If sTxt Is Nothing OrElse sTxt.Length < 5 Then
+    '        mItems = New List(Of JedenQuiz)
+    '        Return False
+    '    End If
 
-        mItems = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(List(Of JedenQuiz)))
+    '    mItems = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(List(Of JedenQuiz)))
 
-        Return True
+    '    Return True
 
-    End Function
+    'End Function
 
-    Public Function Save(Optional bForce As Boolean = False) As Boolean
-        If mItems.Count < 1 Then Return False
+    'Public Function Save(Optional bForce As Boolean = False) As Boolean
+    '    If mItems.Count < 1 Then Return False
 
-        Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(mItems, Newtonsoft.Json.Formatting.Indented)
-        Dim sFilename As String = System.IO.Path.Combine(msRootPath, msFileName)
-        System.IO.File.WriteAllText(sFilename, sTxt)
+    '    Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(mItems, Newtonsoft.Json.Formatting.Indented)
+    '    Dim sFilename As String = System.IO.Path.Combine(msRootPath, msFileName)
+    '    System.IO.File.WriteAllText(sFilename, sTxt)
 
-        'bModified = False
+    '    'bModified = False
 
-        Return True
+    '    Return True
 
-    End Function
+    'End Function
 
+    ''' <summary>
+    ''' własna implementacja, bo sprawdzamy istnienie
+    ''' </summary>
+    ''' <returns>TRUE gdy dodane, FALSE gdy nie dodane (bo np już jest a nie umiemy update)</returns>
     Public Function Add(oNew As JedenQuiz) As Boolean
         If oNew Is Nothing Then Return False
 
@@ -69,23 +79,28 @@ Public Class ListaQuiz
         Return True
     End Function
 
-    Public Function IsLoaded() As Boolean
-        If mItems Is Nothing Then Return False
-        Return True
-    End Function
+    'Public Function IsLoaded() As Boolean
+    '    If mItems Is Nothing Then Return False
+    '    Return True
+    'End Function
 
-    Public Function GetList() As List(Of JedenQuiz)
-        Return mItems
-    End Function
+    'Public Function GetList() As List(Of JedenQuiz)
+    '    Return mItems
+    'End Function
 
-    Public Function Count() As Integer
-        If mItems Is Nothing Then Return -1
-        Return mItems.Count
-    End Function
+    'Public Function Count() As Integer
+    '    If mItems Is Nothing Then Return -1
+    '    Return mItems.Count
+    'End Function
 
+    ''' <summary>
+    ''' Sprawdź istnienie katalogów quizów (każdy quiz ma swój katalog)
+    ''' </summary>
+    ''' <returns>liczba skasowanych katalogów quizów</returns>
     Public Function CheckExistence() As Integer
 
         Dim iCount As Integer = 0
+        If mItems Is Nothing Then Return iCount
 
         For Each oQuiz As JedenQuiz In mItems
             If Not IO.Directory.Exists(IO.Path.Combine(msRootPath, oQuiz.sFolder)) Then
@@ -97,6 +112,10 @@ Public Class ListaQuiz
         Return iCount
     End Function
 
+    ''' <summary>
+    ''' Sprawdź czy może istnieją katalogi o których oficjalnie nic nie wiemy
+    ''' </summary>
+    ''' <returns>liczba katalogów które są, a nie ma ich w pliku danych</returns>
     Public Function CheckOrfants() As Integer
 
         Dim iCount As Integer = 0
@@ -130,18 +149,34 @@ Public Class ListaQuiz
         Return iCount
     End Function
 
+    ''' <summary>
+    ''' Usuń z pliku danych, i ten plik zapisz
+    ''' </summary>
     Public Sub Delete(oItem As JedenQuiz)
-        mItems.Remove(oItem)
+        'mItems.Remove(oItem)
+        MyBase.Remove(oItem)
         Save()
     End Sub
 
+    ''' <summary>
+    ''' Znajdź dane dla quizu sName
+    ''' </summary>
     Public Function GetItem(sName As String) As JedenQuiz
+
+        ' Return Find(Function(x) x.sName = sName) // ale to zwraca default(t) gdy nie ma, a co to jest default tutaj?
+
         For Each oItem In mItems
             If oItem.sName = sName Then Return oItem
         Next
         Return Nothing
     End Function
 
+    ''' <summary>
+    ''' Wczytaj metadane quizu, JSON a jak nie ma to TXT
+    ''' </summary>
+    ''' <param name="sRootFolder">root katalog dla quizów</param>
+    ''' <param name="sDirName">nazwa katalogu z konkretnym quizem</param>
+    ''' <returns>metadane quizu</returns>
     Public Shared Function TryReadQuizInfo(sRootFolder As String, sDirName As String) As JedenQuiz
         ' czysty .Net 
 
@@ -189,6 +224,8 @@ Public Class ListaQuiz
         Dim sTxt As String = System.IO.File.ReadAllText(sInfoFilename)
         If sTxt Is Nothing OrElse sTxt.Length < 5 Then Return Nothing
 
+        ' Return LoadItem(sTxt) // tak się nie da, bo mamy tutaj shared
+
         Try
             Dim oNew As JedenQuiz = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(JedenQuiz))
             oNew.sFolder = sDirName
@@ -202,6 +239,8 @@ Public Class ListaQuiz
 End Class
 
 Public Class JednoPytanie
+    Inherits pkar.BaseStruct
+
     Public Property sTekst As String
     Public Property bTrue As Boolean = False
     Public Property bChecked As Boolean = False

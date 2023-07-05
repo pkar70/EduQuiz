@@ -7,9 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.42" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.1.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="pkar.DotNetExts" Version="1.2.1" />
+    <PackageReference Include="pkar.NetConfigs" Version="1.0.3" />
+    <PackageReference Include="pkar.StructList" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>

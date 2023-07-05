@@ -115,6 +115,12 @@ Public NotInheritable Class MainPage
 
     End Function
 
+    ''' <summary>
+    ''' Stwórzy indeks (do wyszukiwania) - jeśli takiego pliku jeszcze nie ma. Indeksuje HTML tags = sSearchHdr
+    ''' </summary>
+    ''' <param name="oNewQuiz">dla jakiego Quizu</param>
+    ''' <param name="sRootFolder"></param>
+    ''' <returns></returns>
     Private Shared Function TryCreateSearchIndex(oNewQuiz As JedenQuiz, sRootFolder As String) As String
         DumpCurrMethod()
         ' jest to szukalne, to sprawdzamy czy trzeba utworzyć plik indeksowy do szukania, czy nie
