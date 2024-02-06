@@ -1,4 +1,7 @@
-﻿'plik wejsciowy
+﻿
+
+
+'plik wejsciowy
 '<html> <body> <h1> tytuł pliku</h1>
 '<hr>
 '<cokolwiek>
@@ -16,24 +19,45 @@
 ' może być usuwanie odpowiedzi, gdy ich nie ma (row=0)
 
 Imports vb14 = VBlib.pkarlibmodule14
+Imports pkar.UI.Extensions
+Imports Windows.System
+Imports VBlib
+
+
+
+#If PK_WPF Then
+Imports System.Windows.Threading
+Imports Windows.ApplicationModel
+#Else
+imports Windows.Storage ' bo WPF ma swoje
+#End If
 
 Public NotInheritable Class Quiz
     Inherits Page
 
-    Private mQuiz As VBlib.JedenQuiz = Nothing
+    Public mQuiz As VBlib.JedenQuiz = Nothing
     Private miCurrQuestion As Integer = -1  ' init potrzebny
     Private ReadOnly mRandom As New System.Random
-    Private msAnswerLog As String = ""
     Private ReadOnly moTimer As New DispatcherTimer
     Private mQuizContent As VBlib.QuizContent
 
+#If WINDOWS8_0_OR_GREATER Then
     Private Shared ReadOnly moMediaPlayer As New Windows.Media.Playback.MediaPlayer
+#End If
+
+#If PK_WPF Then
+    Public Sub SetQuiz(quizName As String)
+        VBlib.DumpCurrMethod("name: " & quizName)
+        mQuiz = VBlib.MainPage._Quizy.GetItem(quizName)
+    End Sub
+#Else
 
     Protected Overrides Sub onNavigatedTo(e As NavigationEventArgs)
         VBlib.DumpCurrMethod()
         Dim sParam As String = e.Parameter.ToString
-        mQuiz = App.gQuizy.GetItem(sParam)
+        mQuiz = VBlib.MainPage._Quizy.GetItem(sParam)
     End Sub
+#End If
 
     Private Async Function CheckCzyMoznaUruchomic() As Task(Of Boolean)
         VBlib.DumpCurrMethod()
@@ -41,7 +65,7 @@ Public NotInheritable Class Quiz
         ' jesli mamy licznik uruchomień
         If mQuiz.iRuns < Integer.MaxValue Then
             mQuiz.iRuns -= 1
-            App.gQuizy.Save()
+            VBlib.MainPage._Quizy.Save()
             If mQuiz.iRuns < 0 Then
                 Await vb14.DialogBoxAsync("Sorry, za dużo uruchomień")
                 Return False
@@ -73,14 +97,19 @@ Public NotInheritable Class Quiz
         uiTitle.Text = mQuiz.sName
         If Not Await CheckCzyMoznaUruchomic() Then Return
 
-        mQuizContent = New VBlib.QuizContent(mQuiz, App.GetQuizyRootFolder.Path)
-        mQuizContent.ReadQuiz()
+        mQuizContent = New VBlib.QuizContent(mQuiz, VBlib.MainPage._QuizyRootFolder)
+        Dim iMaxQuestion As Integer = mQuizContent.ReadQuiz()
+        uiProgCnt.Maximum = iMaxQuestion
 
         If mQuiz.sSearchHdr = "" Then
             uiSearchGrid.Visibility = Visibility.Collapsed
         Else
             uiSearchGrid.Visibility = Visibility.Visible
         End If
+
+#If PK_WPF Then
+        Await uiWebView.EnsureCoreWebView2Async
+#End If
 
         AddHandler moTimer.Tick, AddressOf Timer_Tick
 
@@ -90,16 +119,17 @@ Public NotInheritable Class Quiz
     End Sub
     Private Async Sub TryStartBackMusic()
 
-        Dim sMusicFilePathname As String = IO.Path.Combine(App.GetQuizyRootFolder.Path, mQuiz.sFolder, "background.mp3")
+        Dim sMusicFilePathname As String = IO.Path.Combine(VBlib.MainPage._QuizyRootFolder, mQuiz.sFolder, "background.mp3")
         If Not IO.File.Exists(sMusicFilePathname) Then Return
 
+#If WINDOWS8_0_OR_GREATER Then
         Dim oFile As Windows.Storage.StorageFile = Await Windows.Storage.StorageFile.GetFileFromPathAsync(sMusicFilePathname)
         Dim oMediaSrc = Windows.Media.Core.MediaSource.CreateFromStorageFile(oFile)
 
         moMediaPlayer.Source = oMediaSrc
         moMediaPlayer.IsLoopingEnabled = True
         moMediaPlayer.Play()
-
+#End If
     End Sub
 
     Private Sub uiGoNext_Click(sender As Object, e As RoutedEventArgs)
@@ -109,47 +139,29 @@ Public NotInheritable Class Quiz
 #Enable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
     End Sub
 
-    Private Sub ReadQuiz()
-        vb14.DumpCurrMethod()
-
-        Dim iMaxQuestion As Integer = mQuizContent.ReadQuiz()
-        If iMaxQuestion < 1 Then Return
-
-        uiProgCnt.Maximum = iMaxQuestion
-
-    End Sub
-
-
     Private Async Function DialogBoxWithTimeoutAsync(sMsg As String, iMsTimeout As Integer) As Task
+#If PK_WPF Then
+        Await Me.MsgBoxAsync(sMsg)
+#Else
         Dim oMsg As New Windows.UI.Popups.MessageDialog(sMsg)
         Dim oWait = oMsg.ShowAsync
+
         Await Task.Delay(iMsTimeout)
         Try
             oWait.Cancel()
         Catch ex As Exception
             ' jakby user wcześniej klikął
         End Try
+#End If
+
     End Function
 
     Private Async Function CheckAnswersy(iCurrQuestion As Integer) As Task(Of Boolean)
         If uiListItems.ItemsSource Is Nothing Then Return True
 
-        ' zapisanie odpowiedzi
-        msAnswerLog = msAnswerLog & "Quesion: " & iCurrQuestion & vbTab & "answers: "
-        For Each oAnswer As VBlib.JednoPytanie In uiListItems.ItemsSource
-            If oAnswer.bChecked Then
-                msAnswerLog &= "T"
-            Else
-                msAnswerLog &= "F"
-            End If
-        Next
-        msAnswerLog &= vbCrLf
+        Dim bGood As Boolean = mQuizContent.CheckAnswersy()
 
-        ' sprawdzenie odpowiedzi
-        Dim bGood As Boolean = True
-        For Each oAnswer As VBlib.JednoPytanie In uiListItems.ItemsSource
-            If oAnswer.bChecked <> oAnswer.bTrue Then bGood = False
-        Next
+        If mQuizContent.currPage.bDisableConfirm Then Return True
 
         ' i reakcja na to
         If bGood Then
@@ -157,15 +169,13 @@ Public NotInheritable Class Quiz
             Return True ' mozna przejść dalej
         Else
             Await DialogBoxWithTimeoutAsync("Niestety, to nie tak...", 1000)
+            If mQuiz.bErrIgnore And Not mQuizContent.currPage.bErrStop Then Return True
 
-            If mQuiz.bErrIgnore Then Return True
-
-            For Each oAnswer As VBlib.JednoPytanie In uiListItems.ItemsSource
+            For Each oAnswer As VBlib.JednoPytanie In mQuizContent.currPage.moAnswerList
                 oAnswer.bChecked = False
             Next
             Return False
         End If
-
 
     End Function
 
@@ -178,7 +188,6 @@ Public NotInheritable Class Quiz
         If Not mQuizContent.IsLoaded Then Return   ' wczytanie nieudane
 
         If Not Await CheckAnswersy(miCurrQuestion) Then Return ' coś z odpowiedziami było nie tak, pozostań
-        ' *TODO* do sprawdzenia czy zniknęły zaznaczone odpowiedzi
 
         ' skasowanie listy odpowiedzi
         uiQuestionRow.Height = New GridLength(5)
@@ -195,6 +204,7 @@ Public NotInheritable Class Quiz
                 If mQuiz.sEmail <> "" Or vb14.GetSettingsBool("allowEmail") Then
                     If Await vb14.DialogBoxYNAsync("Czy chcesz wysłać rezultat?") Then
 
+#If Not PK_WPF Then
                         Dim oMsg As New Windows.ApplicationModel.Email.EmailMessage()
                         oMsg.Subject = "Rezultat testu/quizu " & mQuiz.sName
                         Dim sTxt As String = "Załączam rezultat dzisiejszego testu" & vbCrLf & vbCrLf &
@@ -204,6 +214,9 @@ Public NotInheritable Class Quiz
                         If mQuiz.sEmail <> "" Then oMsg.To.Add(New Email.EmailRecipient(mQuiz.sEmail))
 
                         Await Email.EmailManager.ShowComposeNewEmailAsync(oMsg)
+#Else
+                        Me.MsgBox("Wysyłanie email niestety nie działa w WPF")
+#End If
                     End If
 
                     Return
@@ -217,52 +230,89 @@ Public NotInheritable Class Quiz
 
         miCurrQuestion = Math.Max(1, miCurrQuestion)    ' pytania są od 1, nie od zera
 
-        Await IdzDoPytania(miCurrQuestion)
+        IdzDoPytania(miCurrQuestion)
 
-        moTimer.Interval = TimeSpan.FromSeconds(mQuiz.iSeconds)
-        moTimer.Start()
-
+        If mQuiz.iSeconds < Int16.MaxValue Then
+            ' WPF ma tutaj problem z dużymi liczbami
+            ' TimeSpan period must be less than or equal to Int32.MaxValue
+            moTimer.Interval = TimeSpan.FromSeconds(mQuiz.iSeconds)
+            moTimer.Start()
+        Else
+            moTimer.Stop()
+        End If
     End Function
 
-    Private Async Function IdzDoPytania(iNumer As Integer) As Task
+    Private Sub IdzDoPytania(iNumer As Integer)
+        ' progressbar ma sens tylko przy sekwencyjnym (nie przy losowym)
         If Not mQuiz.bRandom Then
             uiProgCnt.Visibility = Visibility.Visible
             uiProgCnt.Value = iNumer
         End If
 
-        Dim sBody As String = mQuizContent.CreateHtmlBody(iNumer)
-        If sBody = "" Then
+        Dim oCurrPage As VBlib.QuizPage = mQuizContent.IdzDoPytania(iNumer)
+
+        If oCurrPage Is Nothing Then
             ' nie ma, czyli pytanie za daleko?
             uiWebView.NavigateToString("")
         Else
-            If mQuizContent.moAnswerList IsNot Nothing Then
+            If oCurrPage.moAnswerList IsNot Nothing Then
                 uiQuestionRow.Height = New GridLength(1, GridUnitType.Star)
-                uiListItems.ItemsSource = mQuizContent.moAnswerList
+                uiListItems.ItemsSource = Nothing
+                uiListItems.ItemsSource = mQuizContent.currPage.moAnswerList
             End If
-            sBody = "<body>" & Await mQuizContent.InsertImages(sBody) & "</body>"
-            uiWebView.NavigateToString("<html>" & mQuizContent.CreateHtmlHead() & sBody & "</html>")
+
+            Try
+                uiWebView.NavigateToString(oCurrPage.htmlPage)
+                Return
+            Catch ex As Exception
+            End Try
+
+            Try
+                uiWebView.NavigateToString(oCurrPage.htmlPageFallback)
+                Return
+            Catch ex As Exception
+            End Try
+
+            Dim sHtml As String = "<html><body>Nieudane pokazanie treści z wstawionymi binariami oraz nawet czystego HTML</body></html>"
+            Try
+                uiWebView.NavigateToString(sHtml)
+            Catch ex As Exception
+            End Try
+
         End If
+    End Sub
 
-    End Function
 
+#If PK_WPF Then
+    Private Sub wbViewer_NavigationStarting(sender As Microsoft.Web.WebView2.Wpf.WebView2, args As Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs)
 
+#Else
     Private Sub wbViewer_NavigationStarting(sender As WebView, args As WebViewNavigationStartingEventArgs)
+#End If
         vb14.DumpCurrMethod()
 
         If args.Uri Is Nothing Then Return
-
+#If PK_WPF Then
+        ' a w WPF do lokalnych też jest wywoływany!
+        If args.Uri.StartsWith("data") Then Return
+#End If
         args.Cancel = True
 
-#Disable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
-        Windows.System.Launcher.LaunchUriAsync(args.Uri)
-#Enable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
+#If PK_WPF Then
+        Dim addr As New Uri(args.Uri)
+#Else
+        Dim addr as Uri = args.Uri
+#End If
+        addr.OpenBrowser
 
     End Sub
     Private Sub Page_Unloaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
         RemoveHandler moTimer.Tick, AddressOf Timer_Tick
         moTimer.Stop()
+#If WINDOWS8_0_OR_GREATER Then
         moMediaPlayer.Pause()
+#End If
     End Sub
 
     Private Sub Timer_Tick(sender As Object, e As Object)
@@ -292,7 +342,8 @@ Public NotInheritable Class Quiz
 
     End Sub
 
-    Private Sub uiGoTerm_Tapped(sender As Object, e As TappedRoutedEventArgs)
+    ' *TODO* tu zmieniam na próbę
+    Private Sub uiGoTerm_Tapped(sender As Object, e As Object)
         Dim oFE As FrameworkElement = sender
         Dim oItem As JedenSearchTerm = TryCast(oFE.DataContext, JedenSearchTerm)
         If oItem Is Nothing Then Return
@@ -301,6 +352,23 @@ Public NotInheritable Class Quiz
         IdzDoPytania(oItem.iNumer)
 #Enable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
     End Sub
+
+    Private Sub Answer_Checked(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oAnswer As JednoPytanie = oFE?.DataContext
+        If oAnswer Is Nothing Then Return
+
+        If Not oAnswer.bSingleAnswer Then Return
+
+        For Each oItem As JednoPytanie In mQuizContent.currPage.moAnswerList
+            oItem.bChecked = (oItem.sTekst = oAnswer.sTekst)
+        Next
+
+        uiListItems.ItemsSource = Nothing
+        uiListItems.ItemsSource = mQuizContent.currPage.moAnswerList
+
+    End Sub
+
 End Class
 
 Public Class JedenSearchTerm
@@ -309,36 +377,3 @@ Public Class JedenSearchTerm
 End Class
 
 
-'Public Class KonwersjaVisibility
-'    Implements IValueConverter
-
-'    ' Define the Convert method to change a DateTime object to
-'    ' a month string.
-'    Public Function Convert(ByVal value As Object,
-'        ByVal targetType As Type, ByVal parameter As Object,
-'        ByVal language As System.String) As Object _
-'        Implements IValueConverter.Convert
-
-'        Dim bValue As Boolean = CType(value, Boolean)
-'        Dim iNaOdwrot As Integer = CType(parameter, Integer)
-'        If iNaOdwrot <> 0 Then bValue = Not bValue
-
-
-'        If bValue Then
-'            Return Visibility.Visible
-'        Else
-'            Return Visibility.Collapsed
-'        End If
-
-'    End Function
-
-'    ' ConvertBack is not implemented for a OneWay binding.
-'    Public Function ConvertBack(ByVal value As Object,
-'        ByVal targetType As Type, ByVal parameter As Object,
-'        ByVal language As System.String) As Object _
-'        Implements IValueConverter.ConvertBack
-
-'        Throw New NotImplementedException
-
-'    End Function
-'End Class

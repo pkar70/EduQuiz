@@ -1,16 +1,17 @@
 ﻿<Page
-    x:Class="QuizKurs.Quiz"
+    x:Class="Quiz"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:QuizKurs"
+    xmlns:local="clr-namespace:QuizKurs"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded" Unloaded="Page_Unloaded">
+    Loaded="Page_Loaded" Unloaded="Page_Unloaded">
 
-    <UserControl.Resources>
+    <Page.Resources>
         <local:KonwersjaVisibility x:Key="KonwersjaVisibility" />
-    </UserControl.Resources>
+    </Page.Resources>
 
 
     <Grid>
@@ -39,7 +40,7 @@
 
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0" Tapped="uiGoTerm_Tapped" >
+                        <Grid HorizontalAlignment="Stretch" Margin="0,5,0,0" MouseUp="uiGoTerm_Tapped" >
                             <TextBlock Grid.Column="1" Text="{Binding sTekst, Mode=OneWay }"  />
                         </Grid>
                     </DataTemplate>
@@ -47,8 +48,8 @@
             </ListView>
 
         </Grid>
-        
-        <WebView Grid.Row="2" Name="uiWebView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" NavigationStarting="wbViewer_NavigationStarting" />
+
+        <wv2:WebView2  Grid.Row="2" Name="uiWebView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" NavigationStarting="wbViewer_NavigationStarting" />
 
         <ListView Grid.Row="3" x:Name="uiListItems" Margin="2,5,5,5" HorizontalContentAlignment="Stretch"  >
             <ListView.ItemContainerStyle>
@@ -59,26 +60,20 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0" BorderThickness="2" BorderBrush="Blue" >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"  />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
+                    <local:StretchedGridBlue Margin="0,5,0,0" Cols="Auto,*" >
 
                         <CheckBox Grid.Column="0" MinWidth="20" Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=NEG}" />
-                        <RadioButton Grid.Column="0" MinWidth="20" Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=0}" />
+                        <RadioButton Grid.Column="0" MinWidth="20" Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=0}" Checked="Answer_Checked" />
                         <TextBlock Grid.Column="1" Text="{Binding sTekst, Mode=OneWay }"  />
-                    </Grid>
+                    </local:StretchedGridBlue>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
 
         <local:StretchedGrid Grid.Row="4" Cols="*,Auto">
-            <ProgressBar HorizontalAlignment="Stretch" Visibility="Collapsed" Name="uiProgCnt" />
-            <Button Grid.Column="1" Margin="10,15,10,10" Click="uiGoNext_Click" >
-                <SymbolIcon Symbol="Forward" />
-            </Button>
+            <ProgressBar HorizontalAlignment="Stretch" Visibility="Collapsed" Name="uiProgCnt" VerticalAlignment="Center" Height="10"/>
+            <Button Grid.Column="1" Margin="10,15,10,10" Click="uiGoNext_Click" Content="→" FontSize="18"/>
         </local:StretchedGrid>
-        
-    </Grid>
+
+    </Grid> 
 </Page>

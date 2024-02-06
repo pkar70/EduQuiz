@@ -8,30 +8,14 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
 
-    <Grid Margin="5,5,5,5">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <TextBlock FontSize="24" HorizontalAlignment="Center" Text="Edu Quizer" />
+    <local:StretchedGrid Margin="5,5,5,5" Rows="Auto,Auto,*">
+        <local:TextBlockPageTitle Text="Edu Quizer" />
 
-        <ListView Grid.Row="2" Name="uiListItems" Margin="2,5,5,5" HorizontalContentAlignment="Stretch"  >
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
-                </Style>
-            </ListView.ItemContainerStyle>
+        <local:StretchedListView Grid.Row="2" x:Name="uiListItems" Margin="2,5,5,5"  >
 
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0" BorderThickness="2" BorderBrush="Blue" Tapped="uiGoQuiz_Tapped" >
-
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
+                    <local:StretchedGridBlue HorizontalAlignment="Stretch" Margin="0,5,0,0" Tapped="uiGoQuiz_Tapped" Rows="Auto,Auto">
                         <TextBlock Grid.Row="0" Text="{Binding sName, Mode=OneWay }" FontSize="24"  />
                         <TextBlock Grid.Row="1" Text="{Binding sDesc, Mode=OneWay }" FontFamily="Times New Roman" />
 
@@ -41,12 +25,12 @@
                                 <MenuFlyoutItem Text="Delete" Click="uiDelQuiz_Click" />
                             </MenuFlyout>
                         </Grid.ContextFlyout>
-                    </Grid>
+                    </local:StretchedGridBlue>
                 </DataTemplate>
             </ListView.ItemTemplate>
-        </ListView>
+        </local:StretchedListView>
 
-    </Grid>
+    </local:StretchedGrid>
     <Page.BottomAppBar>
         <CommandBar ClosedDisplayMode="Minimal" >
             <AppBarButton Icon="Download" Name="uiDownload" Label="Ściągnij quiz" Click="uiDownload_Click" />

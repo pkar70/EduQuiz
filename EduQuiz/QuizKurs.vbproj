@@ -145,6 +145,12 @@
     <Compile Include="Quiz.xaml.vb">
       <DependentUpon>Quiz.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SharedUserControls\AppBarButtOpenWeb.vb" />
+    <Compile Include="SharedUserControls\StretchedGrid.vb" />
+    <Compile Include="SharedUserControls\StretchedGridBlue.vb" />
+    <Compile Include="SharedUserControls\StretchedListView.vb" />
+    <Compile Include="SharedUserControls\TextBlockAppVersion.vb" />
+    <Compile Include="SharedUserControls\TextBlockPageTitle.vb" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -236,7 +242,10 @@
       <Version>6.2.13</Version>
     </PackageReference>
     <PackageReference Include="pkar.UWP.Config">
-      <Version>1.0.0</Version>
+      <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="pkar.UWP.Extensions">
+      <Version>1.1.5</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +256,9 @@
       <Project>{ef12fe5a-b03c-486e-9075-5a77cbc473de}</Project>
       <Name>VBlib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="defaulty\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

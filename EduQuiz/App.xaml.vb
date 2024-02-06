@@ -139,11 +139,4 @@ NotInheritable Class App
         Return mRootFrame
     End Function
 
-
-    Public Shared Function GetQuizyRootFolder() As Windows.Storage.StorageFolder
-        Return Windows.Storage.ApplicationData.Current.LocalFolder
-    End Function
-
-    Public Shared gQuizy As New VBlib.ListaQuiz(GetQuizyRootFolder.Path)
-
 End Class

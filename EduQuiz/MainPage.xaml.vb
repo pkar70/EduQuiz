@@ -9,87 +9,71 @@
 ' ( find "<h2>" quizkurs.htm > topics.txt )
 
 
-Imports vb14 = VBlib.pkarlibmodule14
-
+Imports pkar.UI.Extensions
 
 Public NotInheritable Class MainPage
     Inherits Page
 
-    Private miBadCnt As Integer = 0     ' blokada abuse na tinyurl
-
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
 
-        Me.ShowAppVers()
         Me.ProgRingInit(True, False)
+        Dim sFoldFrom As String = ""
 
-        If Not vb14.GetSettingsBool("defaultImported") Then
-            Await ImportDefaultKursy()
-            vb14.SetSettingsBool("defaultImported", True)
-        End If
+#If Not PK_WPF Then
+        Try
+            Dim oFoldFrom As Windows.Storage.StorageFolder = Await Windows.Storage.StorageFolder.GetFolderFromPathAsync("ms-appx://defaulty")
+            sFoldFrom = oFoldFrom.Path
+        Catch ex As Exception
+            sFoldFrom = ""
+        End Try
 
+        Dim sFoldTo As String = Windows.Storage.ApplicationData.Current.LocalFolder.Path
+#Else
+        Dim sFoldTo As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+        sFoldTo = IO.Path.Combine(sFoldTo, "QuizKurs")
+        IO.Directory.CreateDirectory(sFoldTo)
+#End If
 
-        Await PokazListeQuizow()
+        Await VBlib.MainPage.UstalListeQuizow(sFoldFrom, sFoldTo)
+
+        PokazListeQuizow()
     End Sub
-
-    Private Async Function ImportDefaultKursy() As Task
-
-        Dim oFile As Windows.Storage.StorageFile
-        For iLoop = 1 To 9 ' max 9 kursów (żeby jedna cyfra)
-            Dim sUri = "ms-appx://defaulty/default" & iLoop.ToString
-            Try
-                oFile = Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(New Uri(sUri))
-                If oFile Is Nothing Then Exit For  ' nie ma, to następnych też nie będzie
-            Catch ex As Exception
-                ' zapewne brak pliku
-                Exit For
-            End Try
-
-            Dim oFold As Windows.Storage.StorageFolder = App.GetQuizyRootFolder
-            Await oFile.CopyAsync(oFold)
-
-            Dim oNew As VBlib.JedenQuiz = Await UnpackQuizFile("default" & iLoop)
-            If oNew Is Nothing Then Return
-
-            App.gQuizy.Add(oNew)
-            App.gQuizy.Save()
-
-        Next
-
-    End Function
 
     Private Async Sub uiDownload_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim sLink As String = Await vb14.DialogBoxInputDirectAsync("Podaj ID quizu:")
-        If sLink = "" Then Return
+        Dim sUserAgent As String = "QuizKurs " & GetAppVers()
 
-        Dim oUri As Uri = Await NormalizeUrl(sLink)
-        If oUri Is Nothing Then Return
-
-        Dim sDirName As String = Await DownloadQuizFile(oUri)
-        If sDirName = "" Then Return
-
-        Dim oNew As VBlib.JedenQuiz = Await UnpackQuizFile(sDirName)
-        If oNew Is Nothing Then Return
-
-        App.gQuizy.Add(oNew)
-        App.gQuizy.Save()
-        Await PokazListeQuizow()
+        If Await VBlib.MainPage.DownloadNewQuizButton(sUserAgent) Then
+            PokazListeQuizow()
+        Else
+            If VBlib.MainPage._iBadCnt > 3 Then uiDownload.IsEnabled = False
+        End If
 
     End Sub
 
-    'Private Sub uiSetup_Click(sender As Object, e As RoutedEventArgs)
-    '    Me.Frame.Navigate(GetType(Setup))
-    'End Sub
+    ' *TODO* tu zmieniam na próbę
+#If PK_WPF Then
+    Private Sub uiGoQuiz_Tapped(sender As Object, e As MouseButtonEventArgs)
+#Else
+    Private Sub uiGoQuiz_Tapped(sender As Object, e As Object)
+#End If
 
-
-    Private Sub uiGoQuiz_Tapped(sender As Object, e As TappedRoutedEventArgs)
         Dim oFE As FrameworkElement = TryCast(sender, FrameworkElement)
         If oFE Is Nothing Then Return
         Dim oItem As VBlib.JedenQuiz = TryCast(oFE.DataContext, VBlib.JedenQuiz)
         If oItem Is Nothing Then Return
         Dim sQuizName As String = oItem.sName
 
+#If PK_WPF Then
+        Dim target As Quiz = New Quiz()
+        target.SetQuiz(sQuizName)
+        Me.NavigationService.Navigate(target)
+        ' inaczej być nie może, bo:
+        ' (a) WPF nie ma przekazywania parametru inaczej niż w NEW
+        ' (b) ale wtedy nie działa Page_Loaded (nie wchodzi do tego)
+#Else
         Me.Frame.Navigate(GetType(Quiz), sQuizName)
+#End If
     End Sub
 
     Private Sub uiStartQuiz_Click(sender As Object, e As RoutedEventArgs)
@@ -98,125 +82,19 @@ Public NotInheritable Class MainPage
 
     Private Async Sub uiDelQuiz_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = TryCast(sender, FrameworkElement)
-        If oFE Is Nothing Then Return
-        Dim oQuiz As VBlib.JedenQuiz = TryCast(oFE.DataContext, VBlib.JedenQuiz)
+        Dim oQuiz As VBlib.JedenQuiz = TryCast(oFE?.DataContext, VBlib.JedenQuiz)
 
-        If Not Await vb14.DialogBoxYNAsync("Czy na pewno chcesz usunąć Quiz " & oQuiz.sName & "?") Then Return
-
-        Dim oRootFold As Windows.Storage.StorageFolder = App.GetQuizyRootFolder
-        Try
-            System.IO.Directory.Delete(System.IO.Path.Combine(oRootFold.Path, oQuiz.sFolder), True)
-            'Dim oFold As Windows.Storage.StorageFolder = Await oRootFold.GetFolderAsync(oQuiz.sFolder)
-            'Await oFold.DeleteAsync
-        Catch ex As Exception
-            ' bo może to być przecież "(deleted)" z listy, prawda?
-        End Try
-        ' *TODO* ale zostaje jeszcze ZIP file, który właściwie też powinien zostać usuniety
-        App.gQuizy.Delete(oQuiz)     ' z zapisem zmienionej wersji listy
+        Await VBlib.MainPage.DeleteQuiz(oQuiz)
 
         uiListItems.ItemsSource = Nothing
-        uiListItems.ItemsSource = App.gQuizy.GetList
+        uiListItems.ItemsSource = VBlib.MainPage._Quizy
 
     End Sub
 
-    Private Async Function PokazListeQuizow() As Task
-
+    Private Sub PokazListeQuizow()
         ' pokaż listę, może jakoś wielkość (w MB) danego quizu?
-
-        ProgRingShow(True)
-        App.gQuizy.Load()
-        Dim iCount As Integer = App.gQuizy.CheckExistence
-        If iCount > 0 Then
-            Await vb14.DialogBoxAsync("Zniknięto " & iCount & " quizów!")
-        End If
-        Dim iCount1 As Integer = App.gQuizy.CheckOrfants
-        If iCount1 > 0 Then
-            Await vb14.DialogBoxAsync("Znaleziono " & iCount1 & " quizów!")
-        End If
-
-        If iCount + iCount1 > 0 Then App.gQuizy.Save()
-
-        ProgRingShow(False)
-
         uiListItems.ItemsSource = Nothing
-        uiListItems.ItemsSource = App.gQuizy.GetList
-
-    End Function
-
-    Private Async Function NormalizeUrl(sUri As String) As Task(Of Uri)
-        ' czysty .Net 
-
-        If miBadCnt > 3 Then Return Nothing
-
-        Dim oUri As Uri = Await VBlib.MainPage.NormalizeUrlAsync(sUri)
-        If oUri Is Nothing Then
-            miBadCnt += 1
-            If miBadCnt > 3 Then uiDownload.IsEnabled = False
-            Await vb14.DialogBoxAsync(VBlib.MainPage.sLastError)
-            Return Nothing
-        End If
-
-        Return oUri
-    End Function
-
-
-    Private Async Function DownloadQuizFile(oUri As Uri) As Task(Of String)
-        ' czysty .Net 
-
-        ' zwraca "" gdy nie ma poprawnego pliku
-        ' albo Filename (bez path) pliku .zip
-
-        Dim oFold As Windows.Storage.StorageFolder = App.GetQuizyRootFolder
-
-        Dim sFilename As String = oUri.AbsoluteUri
-        Dim iInd As Integer = sFilename.LastIndexOf("/")
-        sFilename = sFilename.Substring(iInd + 1)
-        If System.IO.File.Exists(System.IO.Path.Combine(oFold.Path, sFilename)) Then
-            If Not Await vb14.DialogBoxYNAsync("Taki plik już istnieje, overwrite?") Then Return ""
-            System.IO.File.Delete(System.IO.Path.Combine(oFold.Path, sFilename))
-        End If
-
-        ProgRingShow(True)
-
-        Dim sUserAgent As String = "QuizKurs " & GetAppVers()
-        If Not Await VBlib.MainPage.DownloadQuizFileAsync(oUri, sUserAgent, oFold.Path, sFilename) Then
-            Await vb14.DialogBoxAsync(VBlib.MainPage.sLastError)
-        End If
-
-        ProgRingShow(False)
-
-        'If Not VerifyCorrectZip(oFile.Path) Then
-        '    ' *TODO* weryfikacja: czy jest w srodku plik quizkurs.txt z parametrami
-        '    Await oFile.DeleteAsync
-        '    Await DialogBoxAsync("ERROR: błędna struktura ściągniętego pliku")
-        '    Return ""
-        'End If
-        ' https://docs.microsoft.com/en-us/dotnet/api/system.io.compression.ziparchive?f1url=%3FappId%3DDev16IDEF1%26l%3DEN-US%26k%3Dk(System.IO.Compression.ZipArchive);k(TargetFrameworkMoniker-.NETCore,Version%253Dv5.0);k(DevLang-VB)%26rd%3Dtrue&view=net-6.0
-        ' ale to ze Stream się bierze, więc już za dużo tego
-
-        Return sFilename
-
-    End Function
-
-    Private Async Function UnpackQuizFile(sFilename As String) As Task(Of VBlib.JedenQuiz)
-
-        ' ewentualnie szyfrowanie pliku ZIP?
-
-        Me.ProgRingShow(True)
-
-        Dim oNewQuiz As VBlib.JedenQuiz = VBlib.MainPage.UnpackQuizFile(App.GetQuizyRootFolder.Path, sFilename)
-
-        Me.ProgRingShow(False)
-
-        If oNewQuiz Is Nothing Then
-            Await vb14.DialogBoxAsync(VBlib.MainPage.sLastError)
-            Return Nothing
-        End If
-
-        Return oNewQuiz
-
-    End Function
-
-
+        uiListItems.ItemsSource = VBlib.MainPage._Quizy
+    End Sub
 
 End Class

@@ -1,4 +1,9 @@
 
+2024.02.05
+* nowsze Nugety, plus Nugety pkar.Uwp, oraz SharedUserControls
+* wiêcej przerzuci³em do vblib (skoro tamto ju¿ umie msgboxy itp.)
+* wersja WPF (pocz¹tek)
+
 2022.04.26
 * pod³¹czenie nowych module.vb (by³y do \moje\, teraz do nowszych wersji w \mylibs\)
 * zmiana Konwerter na ten z pkmodule (a nie w quiz.xaml.cs)
