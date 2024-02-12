@@ -72,7 +72,9 @@
 
         <local:StretchedGrid Grid.Row="4" Cols="*,Auto">
             <ProgressBar HorizontalAlignment="Stretch" Visibility="Collapsed" Name="uiProgCnt" VerticalAlignment="Center" Height="10"/>
-            <Button Grid.Column="1" Margin="10,15,10,10" Click="uiGoNext_Click" Content="→" FontSize="18"/>
+            <Button Grid.Column="1" Margin="10,15,10,10" Click="uiGoNext_Click" >
+                <local:SymbolIcon Symbol="Forward" />
+            </Button>
         </local:StretchedGrid>
 
     </Grid> 

@@ -16,8 +16,8 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
-       <local:TextBlockPageTitle Text="Edu Quizer" />
+
+        <local:TextBlockPageTitle Text="Edu Quizer" />
 
         <!-- jeśli dać tu Stretched, to dodanie x:Name pokazuje 'is not defined'-->
         <ListView Grid.Row="2" Margin="2,5,5,5" Name="uiListItems">

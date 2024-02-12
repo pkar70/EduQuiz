@@ -208,7 +208,7 @@ Public NotInheritable Class Quiz
                         Dim oMsg As New Windows.ApplicationModel.Email.EmailMessage()
                         oMsg.Subject = "Rezultat testu/quizu " & mQuiz.sName
                         Dim sTxt As String = "Załączam rezultat dzisiejszego testu" & vbCrLf & vbCrLf &
-                                "Data: " & Date.Now & vbCrLf & vbCrLf & msAnswerLog
+                                "Data: " & Date.Now & vbCrLf & vbCrLf & mQuizContent.msAnswerLog
 
                         oMsg.Body = sTxt
                         If mQuiz.sEmail <> "" Then oMsg.To.Add(New Email.EmailRecipient(mQuiz.sEmail))

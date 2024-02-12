@@ -31,7 +31,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
     <PackageReference Include="pkar.WPF.Configs" Version="1.1.2" />
-    <PackageReference Include="pkar.Wpf.Extensions" Version="1.2.2" />
+    <PackageReference Include="pkar.Wpf.Extensions" Version="1.2.10" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,7 +40,6 @@
   <ItemGroup>
     <Folder Include="UserControls\" />
     <Folder Include="SharedUserControls\" />
-    <Folder Include="AsUwpControls\" />
   </ItemGroup>
 
 </Project>

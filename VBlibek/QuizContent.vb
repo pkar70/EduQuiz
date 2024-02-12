@@ -94,6 +94,9 @@ Public Class QuizContent
 
         _htmlHead = CreateHtmlHead()
 
+        _TestFailCnt = 0
+        _TestGoodCnt = 0
+
         Return miMaxQuestion
 
     End Function
@@ -120,7 +123,7 @@ Public Class QuizContent
     End Function
 
     Public Function IdzDoPytania(iNum As Integer) As QuizPage
-        currPage = New QuizPage(mEduQuizDoc, iNum, _htmlHead, GetQuizFolder)
+        currPage = New QuizPage(mEduQuizDoc, iNum, _htmlHead, GetQuizFolder, _TestGoodCnt, _TestFailCnt)
         Return currPage
     End Function
 
@@ -156,10 +159,10 @@ Public Class QuizPage
     Public Property bErrStop As Boolean
     Public Property bRandom As Boolean
 
-    Public Sub New(htmlDoc As HtmlAgilityPack.HtmlDocument, iNum As Integer, htmlHead As String, QuizRootFolder As String)
+    Public Sub New(htmlDoc As HtmlAgilityPack.HtmlDocument, iNum As Integer, htmlHead As String, QuizRootFolder As String, testGoodCnt As Integer, testFailCnt As Integer)
         mPageNum = iNum
 
-        Dim sBody As String = CreateHtmlBody(htmlDoc, iNum)
+        Dim sBody As String = CreateHtmlBody(htmlDoc, iNum, testGoodCnt, testFailCnt)
 
         sBody = "<body>" & sBody & "</body>"
         htmlPageFallback = "<html>" & htmlHead & sBody & "</html>"
@@ -169,7 +172,7 @@ Public Class QuizPage
 
     End Sub
 
-    Public Function CreateHtmlBody(htmlDoc As HtmlAgilityPack.HtmlDocument, iQuestion As Integer) As String
+    Private Function CreateHtmlBody(htmlDoc As HtmlAgilityPack.HtmlDocument, iQuestion As Integer, testGoodCnt As Integer, testFailCnt As Integer) As String
         Dim sHtmlBody As String = ""
 
         Dim oBody As HtmlAgilityPack.HtmlNode = htmlDoc.DocumentNode.SelectNodes("//body").ElementAt(0)
@@ -240,11 +243,18 @@ Public Class QuizPage
                             Select(Function(Tuple) Tuple.Item1)
         End If
 
+        sHtmlBody = sHtmlBody.Replace("[ANSWERSSUMMARY]", GetSummaryText)
+
+        sHtmlBody = sHtmlBody.Replace("[ANSWERSGOOD]", testGoodCnt)
+        sHtmlBody = sHtmlBody.Replace("[ANSWERSFAIL]", testFailCnt)
+        sHtmlBody = sHtmlBody.Replace("[ANSWERSTOTAL]", testFailCnt + testGoodCnt)
+        sHtmlBody = sHtmlBody.Replace("[ANSWERSPERCENT]", CInt(100 * testGoodCnt / (testFailCnt + testGoodCnt)))
+
         Return sHtmlBody
 
     End Function
 
-    Public Function InsertImages(sBody As String, QuizRootFolder As String) As String
+    Private Function InsertImages(sBody As String, QuizRootFolder As String) As String
         DumpCurrMethod()
 
         ' jesli nie ma src innego niz http, to wysyla string
@@ -309,7 +319,6 @@ Public Class QuizPage
 
     End Function
 
-
     Public Function GetLogOdpowiedzi() As String
         If moAnswerList Is Nothing Then Return ""
         If moAnswerList.Count < 2 Then Return ""
@@ -339,6 +348,9 @@ Public Class QuizPage
         Return True
     End Function
 
-
+    Private Function GetSummaryText() As String
+        Return "<b>Podsumowanie odpowiedzi:</b><br>" & vbCrLf &
+            "Poprawnych odpowiedzi: [ANSWERSPERCENT] %, tj. [ANSWERSGOOD] na [ANSWERSTOTAL]"
+    End Function
 End Class
 
