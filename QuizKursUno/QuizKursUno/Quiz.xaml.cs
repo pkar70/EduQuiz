@@ -40,6 +40,8 @@ public sealed partial class Quiz : Page
 
     private VBlib.QuizContent mQuizContent;
 
+    private bool _poPageLoaded;
+
     // to będzie kompilowane dla Windows
 #if !HAS_UNO
     private static readonly Windows.Media.Playback.MediaPlayer moMediaPlayer = new Windows.Media.Playback.MediaPlayer();
@@ -109,7 +111,9 @@ public sealed partial class Quiz : Page
 
         TryStartBackMusic();
 
+        _poPageLoaded = true;
         await GoNextQuestion();
+        
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -131,6 +135,10 @@ public sealed partial class Quiz : Page
 
     private void uiGoNext_Click(Object sender, RoutedEventArgs e)
     {
+        // jakby Uno.WPF nie wchodziło do P_Loaded (breakpoint nie wskakuje)
+        if (!_poPageLoaded)
+            Page_Loaded(sender, e);
+        else
         //vb14.DumpCurrMethod()
 #pragma warning disable CS4014
         GoNextQuestion();

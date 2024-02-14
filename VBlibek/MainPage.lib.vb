@@ -277,6 +277,12 @@ Public NotInheritable Class MainPage
         Dim sLink As String = Await DialogBoxInputDirectAsync("Podaj ID quizu:")
         If sLink = "" Then Return False
 
+        Return Await DownloadNewQuizButtonUno(sUserAgent, sLink)
+
+    End Function
+
+    Public Shared Async Function DownloadNewQuizButtonUno(sUserAgent As String, sLink As String) As Task(Of Boolean)
+
         Dim oUri As Uri = Await NormalizeUrlAsync(sLink)
         If oUri Is Nothing Then Return False
 
@@ -292,5 +298,6 @@ Public NotInheritable Class MainPage
         Return True
 
     End Function
+
 
 End Class

@@ -40,7 +40,10 @@ public sealed partial class MainPage : Page
     {
         String sUserAgent = "QuizKurs " + AsVbHelpers.GetAppVers();
 
-        if (await VBlib.MainPage.DownloadNewQuizButton(sUserAgent))
+        String sLink = await this.InputBoxAsync("Podaj ID quizu:");
+        if (sLink == "") return;
+
+        if (await VBlib.MainPage.DownloadNewQuizButtonUno(sUserAgent, sLink))
             PokazListeQuizow();
         else
             if (VBlib.MainPage._iBadCnt > 3) uiDownload.IsEnabled = false;
@@ -83,22 +86,22 @@ public sealed partial class MainPage : Page
 
 }
 
-public class KonwersjaVisibility : ValueConverterOneWay
-{
+//public class KonwersjaVisibility : ValueConverterOneWay
+//{
 
-    public override Object Convert(Object value,
-    Type targetType, Object parameter,
-    String language)
-    {
-        bool bTemp = (bool)value;
+//    public override Object Convert(Object value,
+//    Type targetType, Object parameter,
+//    String language)
+//    {
+//        bool bTemp = (bool)value;
 
-        if (!(parameter is null))
-        {
-            String sParam = parameter as String;
-            if (sParam.ToUpperInvariant() == "NEG") bTemp = !bTemp;
-        }
-        if (bTemp) return Visibility.Visible;
-        return Visibility.Collapsed;
-    }
+//        if (!(parameter is null))
+//        {
+//            String sParam = parameter as String;
+//            if (sParam.ToUpperInvariant() == "NEG") bTemp = !bTemp;
+//        }
+//        if (bTemp) return Visibility.Visible;
+//        return Visibility.Collapsed;
+//    }
 
-}
+//}

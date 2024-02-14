@@ -1,11 +1,15 @@
 namespace QuizKursUno;
 
-public class App : Application
+public partial class App : Application
 {
     protected Window? MainWindow { get; private set; }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+
+        //pkar.UI.Configs.WinUI3Config.InitSettings(null, false);
+        pkarUno.InitLib(null, true);
+
 #if NET6_0_OR_GREATER && WINDOWS && !HAS_UNO
         MainWindow = new Window();
 #else

@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="pkar.DotNetExts" />
     <PackageReference Include="pkar.Uno.Configs" />
     <PackageReference Include="pkar.Uno.Extensions" />
     <PackageReference Include="Uno.WinUI" />

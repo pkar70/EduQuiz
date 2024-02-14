@@ -247,8 +247,12 @@ Public Class QuizPage
 
         sHtmlBody = sHtmlBody.Replace("[ANSWERSGOOD]", testGoodCnt)
         sHtmlBody = sHtmlBody.Replace("[ANSWERSFAIL]", testFailCnt)
-        sHtmlBody = sHtmlBody.Replace("[ANSWERSTOTAL]", testFailCnt + testGoodCnt)
-        sHtmlBody = sHtmlBody.Replace("[ANSWERSPERCENT]", CInt(100 * testGoodCnt / (testFailCnt + testGoodCnt)))
+        Dim testTotalCnt As Integer = testFailCnt + testGoodCnt
+        sHtmlBody = sHtmlBody.Replace("[ANSWERSTOTAL]", testTotalCnt)
+        If testTotalCnt > 0 Then
+            ' no bo inaczej dzielenie przez zero :)
+            sHtmlBody = sHtmlBody.Replace("[ANSWERSPERCENT]", CInt(100 * testGoodCnt / (testFailCnt + testGoodCnt)))
+        End If
 
         Return sHtmlBody
 
