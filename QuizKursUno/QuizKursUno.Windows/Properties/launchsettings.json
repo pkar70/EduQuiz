@@ -1,0 +1,10 @@
+{
+	"profiles": {
+		"QuizKursUno.Windows (Unpackaged)": {
+			"commandName": "Project"
+		},
+		"QuizKursUno.Windows (Package)": {
+			"commandName": "MsixPackage"
+		}
+	}
+}

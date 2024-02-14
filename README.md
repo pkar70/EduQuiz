@@ -1,3 +1,3 @@
 # EduQuiz / QuizKurs
-This is my trening/exam app QuizKurs (EduQuiz name is already taken).
+This is my training/exam app QuizKurs (EduQuiz name is already taken).
 

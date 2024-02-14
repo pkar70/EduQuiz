@@ -1,0 +1,52 @@
+﻿<Page
+    x:Class="QuizKursUno.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:QuizKursUno"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
+
+  <local:StretchedGrid Margin="5,5,5,5" Rows="Auto,Auto,*,Auto">
+    <local:TextBlockPageTitle Text="Edu Quizer" />
+
+    <local:StretchedListView Grid.Row="2" x:Name="uiListItems" Margin="2,5,5,5"  >
+
+      <ListView.ItemTemplate>
+        <DataTemplate>
+          <local:StretchedGridBlue HorizontalAlignment="Stretch" Margin="0,5,0,0" Tapped="uiGoQuiz_Tapped" Rows="Auto,Auto">
+            <TextBlock Grid.Row="0" Text="{Binding sName, Mode=OneWay }" FontSize="24"  />
+            <TextBlock Grid.Row="1" Text="{Binding sDesc, Mode=OneWay }" FontFamily="Times New Roman" />
+
+            <Grid.ContextFlyout>
+              <MenuFlyout>
+                <MenuFlyoutItem Text="Uruchom" Click="uiStartQuiz_Click" />
+                <MenuFlyoutItem Text="Delete" Click="uiDelQuiz_Click" />
+              </MenuFlyout>
+            </Grid.ContextFlyout>
+          </local:StretchedGridBlue>
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </local:StretchedListView>
+
+    <StackPanel Grid.Row="3" Orientation="Horizontal">
+      <Button Click="uiDownload_Click" Name="uiDownload">
+        <Button.Content>
+          <StackPanel Orientation="Vertical">
+            <TextBlock HorizontalAlignment="Center" Text="📂" FontSize="18" Visibility="Visible"/>
+            <TextBlock HorizontalAlignment="Center" Text="Ściągnij quiz1" Visibility="Collapsed"/>
+          </StackPanel>
+        </Button.Content>
+      </Button>
+    </StackPanel>
+
+
+  </local:StretchedGrid>
+  <!--<Page.BottomAppBar>
+    <CommandBar ClosedDisplayMode="Minimal" >
+      <AppBarButton Icon="Download" Name="uiDownload" Label="Ściągnij quiz" Click="uiDownload_Click" />
+    </CommandBar>
+
+  </Page.BottomAppBar>-->
+</Page>
