@@ -93,6 +93,7 @@ public sealed partial class Quiz : Page
     {
         //vb14.DumpCurrMethod()
         //'ProgRingInit(false, True)
+        this.InitDialogs();
 
         if (mQuiz is null) return;
         uiTitle.Text = mQuiz.sName;

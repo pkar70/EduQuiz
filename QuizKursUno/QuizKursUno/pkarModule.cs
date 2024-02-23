@@ -8,6 +8,8 @@ using static pkar.DotNetExtensions;
 
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel;
+using System.Reflection.Metadata;
+using System.Reflection;
 
 namespace QuizKursUno;
 
@@ -214,7 +216,7 @@ public partial class App : Application
     }
 }
 
-public static class pkarUno
+public static partial class pkarUno
 {
 
 
@@ -978,7 +980,7 @@ partial static class Extensions
 
 #endif
 
-public static partial class Extensions
+public static partial class pkarUno
 {
 
     /// <summary>
@@ -1020,7 +1022,25 @@ public static partial class Extensions
     {
         uiElement.Content = VBlib.pkarlibmodule14.GetLangString(stringId);
     }
+
+    ///<summary>
+    ///ustaw wskoki z vblib dla danej strony; dla UWP oraz WPF niepotrzebne
+    ///</summary>
+    [Obsolete("ale tu coś nie do końca działa, do sprawdzenia!")]
+    public static void InitDialogs(this FrameworkElement element)
+    {
+        //# If Not PK_WPF Then
+        _xamlRoot = element.XamlRoot;
+        //#End If
+        VBlib.pkarlibmodule14.LibInitDialogBox(FromLibDialogBoxAsync, FromLibDialogBoxYNAsync, FromLibDialogBoxInputAllDirectAsync);
+    }
+
+    //#If Not PK_WPF Then
+    private static  XamlRoot _xamlRoot;
+//#End If
+
 }
+
 
 // nie mogą być w VBlib, bo Implements Microsoft.UI.Xaml.Data.IValueConverter
 
@@ -1073,35 +1093,26 @@ public class KonwersjaVal2StringFormat : ValueConverterOneWay
     public override object Convert(object value, Type targetType, object parameter, System.String language)
     {
         string sFormat = "";
-        if (parameter != null)
+        if (parameter != null) 
             sFormat = System.Convert.ToString(parameter);
 
         // value is the data from the source object.
         if (value.GetType() == typeof(int))
         {
             var temp = System.Convert.ToInt32(value);
-            if (sFormat == "")
-                return temp.ToString();
-            else
-                return temp.ToString(sFormat);
+            return (sFormat == "")?temp.ToString():temp.ToString(sFormat);
         }
 
         if (value.GetType() == typeof(long))
         {
             var temp = System.Convert.ToInt64(value);
-            if (sFormat == "")
-                return temp.ToString();
-            else
-                return temp.ToString(sFormat);
+            return (sFormat == "") ? temp.ToString() : temp.ToString(sFormat);
         }
 
         if (value.GetType() == typeof(double))
         {
             var temp = System.Convert.ToDouble(value);
-            if (sFormat == "")
-                return temp.ToString();
-            else
-                return temp.ToString(sFormat);
+            return (sFormat == "") ? temp.ToString() : temp.ToString(sFormat);
         }
 
         if (value.GetType() == typeof(string))

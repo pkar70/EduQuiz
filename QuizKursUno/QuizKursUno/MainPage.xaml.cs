@@ -13,7 +13,7 @@ public sealed partial class MainPage : Page
 
     private async void Page_Loaded(Object sender, RoutedEventArgs e)
     {
-
+        this.InitDialogs();
         this.ProgRingInit(true, false);
         String sFoldFrom = "";
 
@@ -40,7 +40,7 @@ public sealed partial class MainPage : Page
     {
         String sUserAgent = "QuizKurs " + AsVbHelpers.GetAppVers();
 
-        String sLink = await this.InputBoxAsync("Podaj ID quizu:");
+        String sLink = await InputBoxAsync( "Podaj ID quizu:");
         if (sLink == "") return;
 
         if (await VBlib.MainPage.DownloadNewQuizButtonUno(sUserAgent, sLink))
@@ -49,7 +49,34 @@ public sealed partial class MainPage : Page
             if (VBlib.MainPage._iBadCnt > 3) uiDownload.IsEnabled = false;
     }
 
-    private void uiGoQuiz_Tapped(Object sender, RoutedEventArgs e)
+    public async Task<string> InputBoxAsync(string message, string defaultText = "", string buttonContinue = "Continue", string buttonCancel = "Cancel")
+    {
+        TextBox textBox = new TextBox
+        {
+            AcceptsReturn = false,
+            Text = defaultText,
+            IsSpellCheckEnabled = false
+        };
+
+        ContentDialog oDlg = new ContentDialog()
+        {
+            Content = textBox,
+            PrimaryButtonText = buttonContinue,
+            SecondaryButtonText = buttonCancel,
+            Title = message,
+            XamlRoot = this.XamlRoot
+        };
+
+        var cos = await oDlg.ShowAsync();
+
+        if (cos != ContentDialogResult.Primary)
+        {
+            return "";
+        }
+        return textBox.Text;
+    }
+
+        private void uiGoQuiz_Tapped(Object sender, RoutedEventArgs e)
     {
         FrameworkElement oFE = sender as FrameworkElement;
         if (oFE is null) return;

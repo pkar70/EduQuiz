@@ -5,8 +5,9 @@
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
     <PackageVersion Include="pkar.DotNetExts" Version="2.2.5" />
-    <PackageVersion Include="pkar.Uno.Configs" Version="1.0.1" />
-    <PackageVersion Include="pkar.Uno.Extensions" Version="1.0.0" />
+    <PackageVersion Include="pkar.Localize" Version="1.0.1" />
+    <PackageVersion Include="pkar.Uno.Configs" Version="2.0.1" />
+    <PackageVersion Include="pkar.Uno.Extensions" Version="2.0.2" />
     <PackageVersion Include="SkiaSharp.Skottie" Version="2.88.7" />
     <PackageVersion Include="SkiaSharp.Views.Uno.WinUI" Version="2.88.7" />
     <PackageVersion Include="Uno.Core.Extensions.Logging.Singleton" Version="4.0.1" />
