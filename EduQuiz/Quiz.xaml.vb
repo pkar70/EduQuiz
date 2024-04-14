@@ -41,7 +41,7 @@ Public NotInheritable Class Quiz
     Private ReadOnly moTimer As New DispatcherTimer
     Private mQuizContent As VBlib.QuizContent
 
-#If WINDOWS8_0_OR_GREATER Then
+#If WINDOWS8_0_OR_GREATER Or NETFX_CORE Then
     Private Shared ReadOnly moMediaPlayer As New Windows.Media.Playback.MediaPlayer
 #End If
 
@@ -59,7 +59,7 @@ Public NotInheritable Class Quiz
     End Sub
 #End If
 
-    Private Async Function CheckCzyMoznaUruchomic() As Task(Of Boolean)
+    Private Function CheckCzyMoznaUruchomic() As Boolean
         VBlib.DumpCurrMethod()
 
         ' jesli mamy licznik uruchomień
@@ -67,7 +67,7 @@ Public NotInheritable Class Quiz
             mQuiz.iRuns -= 1
             VBlib.MainPage._Quizy.Save()
             If mQuiz.iRuns < 0 Then
-                Await vb14.DialogBoxAsync("Sorry, za dużo uruchomień")
+                Me.MsgBox("Sorry, za dużo uruchomień")
                 Return False
             End If
         End If
@@ -75,13 +75,13 @@ Public NotInheritable Class Quiz
         Dim sCurrDate As String = Date.Now.ToString("yyyyMMdd")
         If sCurrDate < mQuiz.sMinDate Then
             vb14.DumpMessage("Curr date " & sCurrDate & " < minDate " & mQuiz.sMinDate)
-            Await vb14.DialogBoxAsync("Sorry, ale jeszcze za wcześnie - poczekaj parę dni")
+            Me.MsgBox("Sorry, ale jeszcze za wcześnie - poczekaj parę dni")
             Return False
         End If
 
         If sCurrDate > mQuiz.sMaxDate Then
             vb14.DumpMessage("Curr date " & sCurrDate & " > maxDate " & mQuiz.sMaxDate)
-            Await vb14.DialogBoxAsync("Sorry, ale już jest za późno - szkolenie wygasło")
+            Me.MsgBox("Sorry, ale już jest za późno - szkolenie wygasło")
             Return False
         End If
 
@@ -91,11 +91,14 @@ Public NotInheritable Class Quiz
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
+
+        Me.InitDialogs
+
         'ProgRingInit(False, True)
 
         If mQuiz Is Nothing Then Return
         uiTitle.Text = mQuiz.sName
-        If Not Await CheckCzyMoznaUruchomic() Then Return
+        If Not CheckCzyMoznaUruchomic() Then Return
 
         mQuizContent = New VBlib.QuizContent(mQuiz, VBlib.MainPage._QuizyRootFolder)
         Dim iMaxQuestion As Integer = mQuizContent.ReadQuiz()
@@ -117,12 +120,16 @@ Public NotInheritable Class Quiz
 
         Await GoNextQuestion()
     End Sub
+
+    ' to MA await, ale dla UWP
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Sub TryStartBackMusic()
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         Dim sMusicFilePathname As String = IO.Path.Combine(VBlib.MainPage._QuizyRootFolder, mQuiz.sFolder, "background.mp3")
         If Not IO.File.Exists(sMusicFilePathname) Then Return
 
-#If WINDOWS8_0_OR_GREATER Then
+#If WINDOWS8_0_OR_GREATER Or NETFX_CORE Then
         Dim oFile As Windows.Storage.StorageFile = Await Windows.Storage.StorageFile.GetFileFromPathAsync(sMusicFilePathname)
         Dim oMediaSrc = Windows.Media.Core.MediaSource.CreateFromStorageFile(oFile)
 
@@ -202,7 +209,7 @@ Public NotInheritable Class Quiz
                 Await DialogBoxWithTimeoutAsync("KONIEC :)", 5000)
 
                 If mQuiz.sEmail <> "" Or vb14.GetSettingsBool("allowEmail") Then
-                    If Await vb14.DialogBoxYNAsync("Czy chcesz wysłać rezultat?") Then
+                    If Await Me.DialogBoxYNAsync("Czy chcesz wysłać rezultat?") Then
 
 #If Not PK_WPF Then
                         Dim oMsg As New Windows.ApplicationModel.Email.EmailMessage()

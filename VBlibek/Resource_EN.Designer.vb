@@ -75,11 +75,92 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized string similar to ERROR: fundamental file is missing.
+        '''</summary>
+        Friend Shared ReadOnly Property BrakPodstawowegoPliku() As String
+            Get
+                Return ResourceManager.GetString("BrakPodstawowegoPliku", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to ERROR: no question/page is defined.
+        '''</summary>
+        Friend Shared ReadOnly Property BrakPytan() As String
+            Get
+                Return ResourceManager.GetString("BrakPytan", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Such file already exists, overwrite?.
+        '''</summary>
+        Friend Shared ReadOnly Property ConfirmOverwrite() As String
+            Get
+                Return ResourceManager.GetString("ConfirmOverwrite", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Cancel.
+        '''</summary>
+        Friend Shared ReadOnly Property DlgCancel() As String
+            Get
+                Return ResourceManager.GetString("DlgCancel", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Continue.
+        '''</summary>
+        Friend Shared ReadOnly Property DlgContinue() As String
+            Get
+                Return ResourceManager.GetString("DlgContinue", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Enter quiz ID:.
+        '''</summary>
+        Friend Shared ReadOnly Property EnterQuizID() As String
+            Get
+                Return ResourceManager.GetString("EnterQuizID", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized string similar to Yes.
         '''</summary>
         Friend Shared ReadOnly Property msgYes() As String
             Get
                 Return ResourceManager.GetString("msgYes", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to No Quiz folder.
+        '''</summary>
+        Friend Shared ReadOnly Property NoQuizFolder() As String
+            Get
+                Return ResourceManager.GetString("NoQuizFolder", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Answers summary:.
+        '''</summary>
+        Friend Shared ReadOnly Property SummaryTextHeader() As String
+            Get
+                Return ResourceManager.GetString("SummaryTextHeader", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to [ANSWERSPERCENT] % correct answers ( [ANSWERSGOOD] / [ANSWERSTOTAL]).
+        '''</summary>
+        Friend Shared ReadOnly Property SummaryTextLine() As String
+            Get
+                Return ResourceManager.GetString("SummaryTextLine", resourceCulture)
             End Get
         End Property
     End Class

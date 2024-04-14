@@ -4,8 +4,8 @@ Public Class MainWindow
 
     Sub New()
 
+        InitializeComponent()
         Title = "QuizKursasasas"
-
         Me.Content = New MainPage
 
     End Sub

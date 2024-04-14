@@ -9,8 +9,12 @@ taki plik juz istnieje - i pisze ze brakuje, sprawdzic logike (bo potem wchodzi 
 Very simple test course (dates from polish history)
 mainpage, with one loaded course
 
-
 http://spisek.karoccy.name/eduquiz/quizkursdemo.zip
 =>
 http://tinyurl.com/mr3s4drf
+
+po przerzuceniu na OVH:
+https://www.karoccy.name/EduQuiz/QuizKursDemo.zip
+=>
+http://tinyurl.com/ytzv5euh
 

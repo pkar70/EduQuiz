@@ -117,8 +117,35 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BrakPodstawowegoPliku" xml:space="preserve">
+    <value>BŁĄD: brak podstawowego pliku</value>
+  </data>
+  <data name="BrakPytan" xml:space="preserve">
+    <value>BŁĄD: nie zdefiniowano żadnego pytania?</value>
+  </data>
+  <data name="ConfirmOverwrite" xml:space="preserve">
+    <value>Taki plik już istnieje, podmienić go?</value>
+  </data>
+  <data name="DlgCancel" xml:space="preserve">
+    <value>Cofnij</value>
+  </data>
+  <data name="DlgContinue" xml:space="preserve">
+    <value>Dalej</value>
+  </data>
+  <data name="EnterQuizID" xml:space="preserve">
+    <value>Podaj ID quizu:</value>
+  </data>
   <data name="msgYes" xml:space="preserve">
     <value>Tak</value>
+  </data>
+  <data name="NoQuizFolder" xml:space="preserve">
+    <value>Brak folderu quizów</value>
+  </data>
+  <data name="SummaryTextHeader" xml:space="preserve">
+    <value>Podsumowanie odpowiedzi:</value>
+  </data>
+  <data name="SummaryTextLine" xml:space="preserve">
+    <value>Poprawnych odpowiedzi: [ANSWERSPERCENT] %, tj. [ANSWERSGOOD] na [ANSWERSTOTAL]</value>
   </data>
   <data name="_lang" xml:space="preserve">
     <value>PL</value>

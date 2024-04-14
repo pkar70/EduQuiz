@@ -15,6 +15,7 @@
 
 ' może być usuwanie odpowiedzi, gdy ich nie ma (row=0)
 
+Imports pkar
 Imports pkar.DotNetExtensions
 
 Public Class QuizContent
@@ -66,13 +67,13 @@ Public Class QuizContent
 
         Dim sFold As String = GetQuizFolder()
         If sFold = "" Then
-            DialogBox("No Quiz folder")
+            DialogBox("res:NoQuizFolder")
             Return 0
         End If
 
         Dim sHtmlFile As String = System.IO.Path.Combine(sFold, MAIN_HTML_FILE)
         If Not System.IO.File.Exists(sHtmlFile) Then
-            DialogBox("ERROR: brak podstawowego pliku!")
+            DialogBox("res:BrakPodstawowegoPliku")
             Return 0
         End If
 
@@ -82,7 +83,7 @@ Public Class QuizContent
         ' policzmy teraz ile jest itemów
         miMaxQuestion = PoliczQuestions()
         If miMaxQuestion < 0 Then
-            DialogBox("ERROR: brak pytan?")
+            DialogBox("res:BrakPytan")
             mEduQuizDoc = Nothing
             Return 0
         End If
@@ -353,8 +354,10 @@ Public Class QuizPage
     End Function
 
     Private Function GetSummaryText() As String
-        Return "<b>Podsumowanie odpowiedzi:</b><br>" & vbCrLf &
-            "Poprawnych odpowiedzi: [ANSWERSPERCENT] %, tj. [ANSWERSGOOD] na [ANSWERSTOTAL]"
+        Dim hdr As String = Localize.TryGetResManString("res:SummaryTextHeader", "Podsumowanie odpowiedzi:")
+        Dim summ As String = Localize.TryGetResManString("res:SummaryTextLine", "Poprawnych odpowiedzi: [ANSWERSPERCENT] %, tj. [ANSWERSGOOD] na [ANSWERSTOTAL]")
+        Return "<b>" & hdr & "</b><br>" & vbCrLf & summ
+
     End Function
 End Class
 

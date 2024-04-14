@@ -16,6 +16,8 @@ Public NotInheritable Class MainPage
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
 
+        Me.InitDialogs
+
         Me.ProgRingInit(True, False)
         Dim sFoldFrom As String = ""
 

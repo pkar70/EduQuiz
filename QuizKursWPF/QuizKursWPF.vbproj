@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <SplashScreen Include="Assets\SplashScreen.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Import Include="System.Windows" />
     <Import Include="System.Windows.Controls" />
     <Import Include="System.Windows.Data" />
@@ -30,8 +34,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
-    <PackageReference Include="pkar.WPF.Configs" Version="1.1.2" />
-    <PackageReference Include="pkar.Wpf.Extensions" Version="1.2.10" />
+    <PackageReference Include="pkar.WPF.Configs" Version="2.0.1" />
+    <PackageReference Include="pkar.Wpf.Extensions" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>

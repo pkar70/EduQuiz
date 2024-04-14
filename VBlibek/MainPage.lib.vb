@@ -37,6 +37,7 @@ Public NotInheritable Class MainPage
 
         sUri = "https://tinyurl.com/" & sUri
 
+        DumpMessage("Trying resolve " & sUri)
         Dim oWebClntHand As New System.Net.Http.HttpClientHandler
         oWebClntHand.AllowAutoRedirect = False
 
@@ -61,9 +62,9 @@ Public NotInheritable Class MainPage
                 Return Nothing
             End If
 
-            Dim oRetUri As New Uri(oHttpResp.Headers.Location.ToString)
+            Dim oRetUri = oHttpResp.Headers.Location
             oHttpResp.Dispose()
-
+            DumpMessage("Converted Uri: " & oRetUri.ToString)
             Return oRetUri
 
         End Using
@@ -130,17 +131,20 @@ Public NotInheritable Class MainPage
     ''' <param name="sUserAgent">jakiego userAgent użyć</param>
     ''' <returns>filename.ext ściągniętego pliku</returns>
     Public Shared Async Function DownloadQuizFileAsync(oUri As Uri, sUserAgent As String) As Task(Of String)
+        DumpCurrMethod($"('{oUri.ToString}','{sUserAgent}'")
 
         Dim sFilename As String = oUri.AbsoluteUri
         Dim iInd As Integer = sFilename.LastIndexOf("/")
         sFilename = sFilename.Substring(iInd + 1)
+        DumpMessage("Filename " & sFilename)
         If IO.File.Exists(System.IO.Path.Combine(_QuizyRootFolder, sFilename)) Then
-            If Not Await DialogBoxYNAsync("Taki plik już istnieje, overwrite?") Then Return ""
+            If Not Await DialogBoxYNAsync("res:ConfirmOverwrite") Then Return ""
             IO.File.Delete(System.IO.Path.Combine(_QuizyRootFolder, sFilename))
         End If
 
         Dim oHttp As New System.Net.Http.HttpClient()
-        oHttp.DefaultRequestHeaders.UserAgent.TryParseAdd(sUserAgent)
+
+        'oHttp.DefaultRequestHeaders.UserAgent.TryParseAdd(sUserAgent)
         Dim oHttpResp As Net.Http.HttpResponseMessage = Await oHttp.GetAsync(oUri)
         If oHttpResp.StatusCode > 290 Then
             _sLastError = "ERROR: HTTP status " & oHttpResp.StatusCode.ToString & " while downloading data"
@@ -274,7 +278,7 @@ Public NotInheritable Class MainPage
 
     Public Shared Async Function DownloadNewQuizButton(sUserAgent As String) As Task(Of Boolean)
 
-        Dim sLink As String = Await DialogBoxInputDirectAsync("Podaj ID quizu:")
+        Dim sLink As String = Await InputBoxAsync("res:EnterQuizID")
         If sLink = "" Then Return False
 
         Return Await DownloadNewQuizButtonUno(sUserAgent, sLink)
@@ -282,8 +286,10 @@ Public NotInheritable Class MainPage
     End Function
 
     Public Shared Async Function DownloadNewQuizButtonUno(sUserAgent As String, sLink As String) As Task(Of Boolean)
+        DumpCurrMethod($"Agent: {sUserAgent}, id: {sLink}")
 
         Dim oUri As Uri = Await NormalizeUrlAsync(sLink)
+        DumpMessage("Normalized Uri: " & oUri.ToString)
         If oUri Is Nothing Then Return False
 
         Dim sDirName As String = Await DownloadQuizFileAsync(oUri, sUserAgent)
