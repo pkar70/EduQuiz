@@ -117,7 +117,7 @@ Public NotInheritable Class MainPage
             Dim oNew As VBlib.JedenQuiz = Await UnpackQuizFileAsync(filename)
             If oNew Is Nothing Then Return
 
-            _Quizy.Add(oNew)
+            _Quizy.AddTu(oNew)
             _Quizy.Save()
 
         Next
@@ -298,7 +298,7 @@ Public NotInheritable Class MainPage
         Dim oNew As VBlib.JedenQuiz = Await UnpackQuizFileAsync(sDirName)
         If oNew Is Nothing Then Return False
 
-        _Quizy.Add(oNew)
+        _Quizy.AddTu(oNew)
         _Quizy.Save()
 
         Return True

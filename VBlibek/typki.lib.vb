@@ -36,7 +36,7 @@ Public Class ListaQuiz
     ''' własna implementacja, bo sprawdzamy istnienie
     ''' </summary>
     ''' <returns>TRUE gdy dodane, FALSE gdy nie dodane (bo np już jest a nie umiemy update)</returns>
-    Public Overloads Function Add(oNew As JedenQuiz) As Boolean
+    Public Function AddTu(oNew As JedenQuiz) As Boolean
         If oNew Is Nothing Then Return False
 
         'If mItems Is Nothing Then
@@ -49,7 +49,7 @@ Public Class ListaQuiz
 
         ' bModified = True
 
-        MyBase.Add(oNew)
+        Add(oNew)
 
         Return True
     End Function
@@ -102,7 +102,7 @@ Public Class ListaQuiz
                     'oNew.sFolder = oFolder.Name
                     'oNew.sName = oFolder.Name
                     oNew.sDesc = "(orfant)"
-                    Add(oNew)
+                    AddTu(oNew)
                 End If
             End If
 

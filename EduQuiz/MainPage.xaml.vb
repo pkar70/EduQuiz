@@ -45,6 +45,9 @@ Public NotInheritable Class MainPage
 
         Dim sUserAgent As String = "QuizKurs " & GetAppVers()
 
+        ' bez tego Add robi crash - bo ObservableList z innego thread, więc muszę wygasić listę
+        uiListItems.ItemsSource = Nothing
+
         If Await VBlib.MainPage.DownloadNewQuizButton(sUserAgent) Then
             PokazListeQuizow()
         Else
@@ -88,8 +91,8 @@ Public NotInheritable Class MainPage
 
         Await VBlib.MainPage.DeleteQuiz(oQuiz)
 
-        uiListItems.ItemsSource = Nothing
-        uiListItems.ItemsSource = VBlib.MainPage._Quizy
+        'uiListItems.ItemsSource = Nothing
+        'uiListItems.ItemsSource = VBlib.MainPage._Quizy
 
     End Sub
 
