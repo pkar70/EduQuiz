@@ -59,15 +59,19 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0" BorderThickness="2" BorderBrush="Blue" >
-                        <Grid.ColumnDefinitions>
+                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0" BorderThickness="2" BorderBrush="Blue" Padding="0" MinHeight="20">
+                        <!--<Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"  />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
 
-                        <CheckBox Grid.Column="0" MinWidth="20" Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=NEG}" />
-                        <RadioButton Grid.Column="0" MinWidth="20" Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=0}" />
-                        <TextBlock Grid.Column="1" Text="{Binding sTekst, Mode=OneWay }"  />
+                        <CheckBox Grid.Column="0" MinWidth="20" Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=NEG}" VerticalAlignment="Center" />
+                        <RadioButton Grid.Column="0" MinWidth="20" Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=0}" GroupName="grupka" VerticalAlignment="Center" />
+
+                        <TextBox Grid.Column="1" Text="{Binding sTekst, Mode=OneWay }" AcceptsReturn="True" BorderThickness="0" VerticalAlignment="Center"/>-->
+                        
+                        <CheckBox Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=NEG}" Content="{Binding sTekst, Mode=OneWay }" />
+                        <RadioButton Margin="3,0,3,0" IsChecked="{Binding bChecked, Mode=TwoWay }" Visibility="{Binding bSingleAnswer, Mode=OneWay, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=0}" GroupName="grupka" Content="{Binding sTekst, Mode=OneWay }" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
