@@ -214,7 +214,8 @@ Public Class QuizPage
                         If oLiItem.InnerHtml.ContainsCI("[QUIZ]") Then Continue For
 
                         Dim oNew As New JednoPytanie
-                        oNew.sTekst = oLiItem.InnerHtml.Replace("[TRUE]", "")
+                        ' TRIM żebym nie musiał przerabiać pliku pytań do exam krótkofalarskiego :)
+                        oNew.sTekst = oLiItem.InnerHtml.Replace("[TRUE]", "").Trim
                         If oLiItem.InnerHtml.Contains("[TRUE]") Then oNew.bTrue = True
                         oNew.bSingleAnswer = bSingleAnswer
                         oNew.iNum = iNum
