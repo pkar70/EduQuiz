@@ -205,7 +205,7 @@ Public NotInheritable Class Quiz
             vb14.DumpMessage("Losuje pytanie: " & miCurrQuestion)
         Else
 
-            If miCurrQuestion >= mQuizContent.GetMaxQuestion Then
+            If miCurrQuestion > mQuizContent.GetMaxQuestion Then
                 Await DialogBoxWithTimeoutAsync("KONIEC :)", 5000)
 
                 If mQuiz.sEmail <> "" Or vb14.GetSettingsBool("allowEmail") Then
